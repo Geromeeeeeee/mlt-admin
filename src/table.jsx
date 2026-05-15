@@ -1,8 +1,7 @@
-import { useRecords } from "./records";
 import { useState } from "react";
+import axios from "axios";
 
-export function Table ({type, list}) {
-    const records = useRecords()
+export function Table ({type, list, action}) {
     const [selectedImg, setSelectedImg] = useState(null);
 
     return(
@@ -67,6 +66,8 @@ export function Table ({type, list}) {
                         </>
                     ) : (
                         list.map((requests, index)=>{
+                        const id = requests.request_id
+
                         let actionButton
                         if(type==="Active Rental Requests"){
                             actionButton = (
@@ -77,7 +78,7 @@ export function Table ({type, list}) {
                         } else if (type === "Pending Rental Requests"){
                             if(requests.request_status === "Pending"){
                                 actionButton = (
-                                    <button className="btn btn-primary">
+                                    <button className="btn btn-primary" onClick={()=> action(id, "Approve")}>
                                         Approve
                                     </button>
                                 )
@@ -89,7 +90,7 @@ export function Table ({type, list}) {
                                 )
                             } else if (requests.request_status === "Approved" && requests.payment_status === "Proof Uploaded"){
                                 actionButton = (
-                                    <button className="btn btn-primary">
+                                    <button className="btn btn-primary" onClick={()=> action(id, "Payment")}>
                                         Verify Payment
                                     </button>
                                 )
@@ -101,6 +102,7 @@ export function Table ({type, list}) {
                                 </button>
                             )
                         }
+
                         return(
                         <tr key={requests.request_id || index}>
                             {type!=="Early Return Requests" && (
