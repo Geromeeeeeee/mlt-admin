@@ -1,7 +1,13 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 export function Table ({type, list, action}) {
+
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    const nav = useNavigate()
+
     const [selectedImg, setSelectedImg] = useState(null);
 
     return(
@@ -96,8 +102,11 @@ export function Table ({type, list, action}) {
                                 )
                             }
                         } else if (type === "Approved Rentals"){
+
+                            const disableButton = requests.rental_date !== todayStr;
+
                             actionButton = (
-                                <button className="btn btn-primary">
+                                <button className="btn btn-primary" disabled={disableButton} onClick={()=>nav("/Vehicle Pickup", {state: requests})}>
                                     Hand Over
                                 </button>
                             )
