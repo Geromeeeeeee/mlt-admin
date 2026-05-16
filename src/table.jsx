@@ -150,6 +150,18 @@ export function Table ({type, list, action}) {
                                 <td>{actionButton}</td>
                                 </>
                             )}
+                            {type === "Early Return Requests" && (
+                                <>
+                                <td className="font-bold">{requests.fullname}</td>
+                                <td className="w-fit">{requests.model}, {requests.plate_no}</td>
+                                <td>{requests.total_cost}</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                </>
+                            )}
                         </tr>
                         )
                         })
