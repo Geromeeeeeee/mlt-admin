@@ -33,7 +33,7 @@ export function Table ({type, list, action}) {
             <table className="table table-zebra bg-base-100">
                 <thead>
                     <tr>
-                        {type !== "Early Return Requests" && (
+                        {type !== "Return Requests" && (
                         <>
                         <th>Renter</th>
                         <th>Vehicle</th>
@@ -49,7 +49,7 @@ export function Table ({type, list, action}) {
                         <th>Action</th>
                         </>
                         )}
-                        {type === "Early Return Requests" && (
+                        {type === "Return Requests" && (
                         <>
                         <th>Renter</th>
                         <th>Vehicle</th>
@@ -57,7 +57,6 @@ export function Table ({type, list, action}) {
                         <th>Final Charge</th>
                         <th>Date</th>
                         <th>Status</th>
-                        <th>Notes</th>
                         <th>Action</th>
                         </>
                         )}
@@ -114,7 +113,7 @@ export function Table ({type, list, action}) {
 
                         return(
                         <tr key={requests.request_id || index}>
-                            {type!=="Early Return Requests" && (
+                            {type!=="Return Requests" && (
                                 <>
                                 <td className="font-bold">{requests.fullname}</td>
                                 <td className="w-fit">{requests.model}, {requests.plate_no}</td>
@@ -150,16 +149,25 @@ export function Table ({type, list, action}) {
                                 <td>{actionButton}</td>
                                 </>
                             )}
-                            {type === "Early Return Requests" && (
+                            {type === "Return Requests" && (
                                 <>
                                 <td className="font-bold">{requests.fullname}</td>
                                 <td className="w-fit">{requests.model}, {requests.plate_no}</td>
                                 <td>{requests.total_cost}</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
+                                <td>{parseFloat(requests.total_cost) - parseFloat(requests.total_deducted_cost)}</td>
+                                <td>{requests.requested_at}</td>
+                                <td>{requests.request_status}</td>
+                                <td>
+                                    {requests.status==="Approved" ? (
+                                    <button className="btn btn-sm btn-info text-white">
+                                        Return Form
+                                    </button>
+                                    ) : (
+                                    <button className="btn btn-sm btn-info text-white" onClick={()=> action(id, "Approve Return")}>
+                                    Approve
+                                    </button>
+                                    )}
+                                </td>
                                 </>
                             )}
                         </tr>

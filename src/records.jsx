@@ -3,11 +3,25 @@ import axios from "axios";
 
 export function useRecords (){
     const [records, setRecords] = useState([])
+    const [returns, setReturns] = useState([])
 
     const getRecords = async () => {
         try {
-            const response = await axios.get("http://localhost/mlt-admin/back/api.php")
+            const response = await axios.post("http://localhost/mlt-admin/back/api.php", {
+                action: "getRequests"
+            })
             setRecords(response.data)
+        } catch (error) {
+            alert("Server Error")
+        }
+    }
+
+    const getReturn = async () =>{
+        try {
+            const returnRequests = await axios.post("http://localhost/mlt-admin/back/api.php", {
+                action: "getReturnRequests"
+            })
+            setReturns(returnRequests.data)
         } catch (error) {
             alert("Server Error")
         }
@@ -20,6 +34,7 @@ export function useRecords (){
                 action: actionType
             })
             await getRecords()
+            await getReturn()
             alert(`${actionType} Successful`)
         } catch (error) {
             alert(`${actionType} Failed`)
@@ -28,7 +43,8 @@ export function useRecords (){
 
     useEffect(()=>{
         getRecords()
+        getReturn()
     },[])
 
-    return{records, getRecords, buttonAction}
+    return{records, returns, getReturn ,getRecords, buttonAction}
 }
