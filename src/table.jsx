@@ -73,6 +73,36 @@ export function Table ({type, list, action}) {
                         list.map((requests, index)=>{
                         const id = requests.request_id
 
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+
+                        let lateFeeAmount = 0;
+                        let daysLate = 0;
+
+                        if (requests.rental_date && requests.rental_duration_days) {
+                            const [year, month, day] = requests.rental_date.split("-").map(Number);
+                            const scheduledReturnDate = new Date(year, month - 1, day);
+                            scheduledReturnDate.setHours(0, 0, 0, 0);
+
+                            const durationDays = parseInt(requests.rental_duration_days, 10);
+                            const daysToAdd = durationDays > 0 ? durationDays - 1 : 0;
+                            
+                            scheduledReturnDate.setDate(scheduledReturnDate.getDate() + daysToAdd);
+                            scheduledReturnDate.setHours(0, 0, 0, 0);
+
+                            const actualReturnStr = requests.requested_at ? requests.requested_at.split(" ")[0] : null;
+
+                            if (actualReturnStr) {
+                                const [retYear, retMonth, retDay] = actualReturnStr.split("-").map(Number);
+                                const actualReturnDate = new Date(retYear, retMonth - 1, retDay);
+                                actualReturnDate.setHours(0, 0, 0, 0);
+
+                                const timeDiff = actualReturnDate.getTime() - scheduledReturnDate.getTime();
+                                daysLate = timeDiff > 0 ? Math.floor(timeDiff / (1000 * 60 * 60 * 24)) : 0;
+                                lateFeeAmount = daysLate * parseFloat(requests.daily_rate || 0);
+                            }
+                        }
+
                         let actionButton
                         if(type==="Active Rental Requests"){
                             actionButton = (
@@ -154,12 +184,42 @@ export function Table ({type, list, action}) {
                                 <td className="font-bold">{requests.fullname}</td>
                                 <td className="w-fit">{requests.model}, {requests.plate_no}</td>
                                 <td>{requests.total_cost}</td>
-                                <td>{parseFloat(requests.total_cost) - parseFloat(requests.total_deducted_cost)}</td>
+                                <td>
+                                    {(() => {
+                                    const isEarly = requests.request_status === "Early Return Approved";
+                                    const isLate = requests.request_status === "Late Return Approved";
+                                    
+                                    const cost = parseFloat(requests.total_cost || 0);
+                                    const deducted = parseFloat(requests.total_deducted_cost || 0);
+
+                                    if (isEarly) {
+                                        return (
+                                            <span className="text-success font-semibold">
+                                                {deducted} (Early)
+                                            </span>
+                                        );
+                                    } else if (isLate && lateFeeAmount > 0) {
+                                        const totalWithLateFee = cost + lateFeeAmount;
+                                        return (
+                                            <div className="flex flex-col">
+                                                <span className="text-error font-bold">
+                                                    {totalWithLateFee}
+                                                </span>
+                                                <span className="text-xs text-error/80">
+                                                    ({lateFeeAmount} penalty)
+                                                </span>
+                                            </div>
+                                        );
+                                    } else {
+                                        return <span>{cost}</span>;
+                                    }
+                                })()}
+                                </td>
                                 <td>{requests.requested_at}</td>
                                 <td>{requests.request_status}</td>
                                 <td>
                                     {requests.status==="Approved" ? (
-                                    <button className="btn btn-sm btn-info text-white">
+                                    <button className="btn btn-sm btn-info text-white" onClick={()=>nav("/Return Vehicle", {state: requests})}>
                                         Return Form
                                     </button>
                                     ) : (
