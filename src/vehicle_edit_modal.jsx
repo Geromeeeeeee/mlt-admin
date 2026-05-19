@@ -1,9 +1,7 @@
 import { useState } from "react"
-import { useRecords } from "./records"
 
-export function Vehicle_Edit_Modal ({vehicle, onClose}){
+export function Vehicle_Edit_Modal ({vehicle, onClose, getVehicles, updateVehicles}){
 
-    const {updateVehicles} = useRecords()
     const [formData, setFormData] = useState({
         id: vehicle.car_id,
         model: vehicle.model,
@@ -25,6 +23,7 @@ export function Vehicle_Edit_Modal ({vehicle, onClose}){
         const success = await updateVehicles(formData)
 
         if(success){
+            await getVehicles()
             onClose()
         }
     }

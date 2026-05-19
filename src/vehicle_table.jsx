@@ -1,10 +1,8 @@
 import { useState, useRef } from "react";
 import { Vehicle_Edit_Modal } from "./vehicle_edit_modal";
-import { useRecords } from "./records";
 
-export function Vehicle_Table ({details}){
+export function Vehicle_Table ({details, getVehicles, updateVehicles}){
 
-    const {vehicles} = useRecords()
     const [carDisp, setCarDisp] = useState(null)
     const scrollRef = useRef(null)
     const [editVehicle, setEditVehicle] = useState(null)
@@ -47,7 +45,7 @@ export function Vehicle_Table ({details}){
         )}
 
         {editVehicle && (
-            <Vehicle_Edit_Modal vehicle={editVehicle} onClose={()=>setEditVehicle(null)}/>
+            <Vehicle_Edit_Modal vehicle={editVehicle} onClose={()=>setEditVehicle(null)} getVehicles={getVehicles} updateVehicles={updateVehicles}/>
         )}
         <h1 className="text-xl font-bold mb-2.5">Manage Vehicles</h1>
         <table className="table table-zebra table-pin-rows bg-base-100 shadow-sm">
