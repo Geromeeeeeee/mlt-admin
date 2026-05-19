@@ -1,9 +1,13 @@
 import { useState, useRef } from "react";
+import { Vehicle_Edit_Modal } from "./vehicle_edit_modal";
+import { useRecords } from "./records";
 
 export function Vehicle_Table ({details}){
 
+    const {vehicles} = useRecords()
     const [carDisp, setCarDisp] = useState(null)
     const scrollRef = useRef(null)
+    const [editVehicle, setEditVehicle] = useState(null)
 
     return(
         <>
@@ -28,6 +32,7 @@ export function Vehicle_Table ({details}){
                     ):(
                         null
                     )}
+                    
                 </div>
                 <div className="flex justify-between absolute top-1/2 self-center -translate-y-1/2 w-full p-5">
                     <button className="btn btn-circle btn-accent mb-2.5 text-white" onClick={()=>scrollRef.current.scrollBy({left: -scrollRef.current.offsetWidth, behavior: 'smooth'})}>
@@ -39,6 +44,10 @@ export function Vehicle_Table ({details}){
                 </div>
             </div>
         </div>
+        )}
+
+        {editVehicle && (
+            <Vehicle_Edit_Modal vehicle={editVehicle} onClose={()=>setEditVehicle(null)}/>
         )}
         <h1 className="text-xl font-bold mb-2.5">Manage Vehicles</h1>
         <table className="table table-zebra table-pin-rows bg-base-100 shadow-sm">
@@ -79,7 +88,7 @@ export function Vehicle_Table ({details}){
                             )}
                         </td>
                         <td>
-                            <button className="btn btn-primary btn-sm">
+                            <button className="btn btn-primary btn-sm" onClick={()=>setEditVehicle(details)}>
                                 Edit
                             </button>
                         </td>

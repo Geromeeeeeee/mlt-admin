@@ -16,8 +16,35 @@ if($data){
             }
         }
         echo json_encode($vehicle_details);
+        exit();
     }
 
-    //To follow ung for updating kasi nalilito pa ako
+    if($action === "updateVehicles"){
+        $id = $data['id'];
+        $model = $data['model'];
+        $plate = $data['plate'];
+        $rate = $data['rate'];
+        $owner = $data['owner'];
+        $desc = $data['desc'];
+        $availability = $data['availability'];
+
+        $update = "UPDATE cars SET
+        model = ?,
+        plate_no = ?,
+        daily_rate = ?,
+        owner = ?,
+        description = ?,
+        availability = ?
+        WHERE car_id = ?
+        ";
+
+        $stmt = $conn->prepare($update);
+        $stmt->bind_param("ssdssii", $model, $plate, $rate, $owner, $desc, $availability, $id);
+        if($stmt->execute()){
+            echo json_encode(["status" => "success", "message" => "Vehicle updated successfully!"]);
+        }
+        $stmt->close();
+        exit();
+    }
 }
 ?>

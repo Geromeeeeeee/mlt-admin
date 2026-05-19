@@ -53,14 +53,18 @@ export function useRecords (){
         }
     }
 
-    const updateVehicles = async () => {
+    const updateVehicles = async (formData) => {
         try {
             const updatedVehicleDetails = await axios.post("http://localhost/mlt-admin/back/vehicles.php", {
-                action: "updateVehicles"
+                action: "updateVehicles",
+                ...formData
             })
-            setVehicles(updatedVehicleDetails.data)
+            await getVehicles()
+            alert("Updates Successfully")
+            return true
         } catch (error) {
             alert("Server Error")
+            return false
         }
     }
 
@@ -70,5 +74,5 @@ export function useRecords (){
         getVehicles()
     },[])
 
-    return{records, returns, vehicles , getVehicles ,getReturn ,getRecords, buttonAction}
+    return{records, returns, vehicles , getVehicles, updateVehicles ,getReturn ,getRecords, buttonAction}
 }
