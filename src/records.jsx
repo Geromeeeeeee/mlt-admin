@@ -4,6 +4,7 @@ import axios from "axios";
 export function useRecords (){
     const [records, setRecords] = useState([])
     const [returns, setReturns] = useState([])
+    const [vehicles, setVehicles] = useState([])
 
     const getRecords = async () => {
         try {
@@ -41,10 +42,33 @@ export function useRecords (){
         }
     }
 
+    const getVehicles = async () => {
+        try {
+            const vehicleDetails = await axios.post("http://localhost/mlt-admin/back/vehicles.php", {
+                action: "getVehicles"
+            })
+            setVehicles(vehicleDetails.data)
+        } catch (error) {
+            alert("Server Error")
+        }
+    }
+
+    const updateVehicles = async () => {
+        try {
+            const updatedVehicleDetails = await axios.post("http://localhost/mlt-admin/back/vehicles.php", {
+                action: "updateVehicles"
+            })
+            setVehicles(updatedVehicleDetails.data)
+        } catch (error) {
+            alert("Server Error")
+        }
+    }
+
     useEffect(()=>{
         getRecords()
         getReturn()
+        getVehicles()
     },[])
 
-    return{records, returns, getReturn ,getRecords, buttonAction}
+    return{records, returns, vehicles , getVehicles ,getReturn ,getRecords, buttonAction}
 }

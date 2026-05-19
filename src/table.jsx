@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
 export function Table ({type, list, action}) {
 
@@ -12,6 +11,8 @@ export function Table ({type, list, action}) {
 
     return(
         <div className="p-5">
+            {/**View license / payment proof. dito q ginaya yung sa vehicle table */}
+            {/**Bakit ganito yung comment tapos kapag nasa loob ng map iba? dahil ba sa curly braces? */}
             {selectedImg && (
                 <div className="modal modal-open bg-black/60" onClick={() => setSelectedImg(null)}>
                     <div className="modal-box relative max-w-3xl bg-base-100 p-0 overflow-hidden" onClick={e => e.stopPropagation()}>
@@ -73,6 +74,7 @@ export function Table ({type, list, action}) {
                         list.map((requests, index)=>{
                         const id = requests.request_id
 
+                        //Date formatting para sa late and early returns for their refunds saka late fees
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
 
@@ -103,6 +105,7 @@ export function Table ({type, list, action}) {
                             }
                         }
 
+                        //Different button types depende sa rental status, kung late, early, or on time ba sha
                         let actionButton
                         if(type==="Active Rental Requests"){
                             actionButton = (
