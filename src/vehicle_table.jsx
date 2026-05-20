@@ -1,11 +1,14 @@
 import { useState, useRef } from "react";
 import { Vehicle_Edit_Modal } from "./vehicle_edit_modal";
+import { Add_Vehicle } from "./add_vehicle_modal";
 
 export function Vehicle_Table ({details, getVehicles, updateVehicles}){
 
     const [carDisp, setCarDisp] = useState(null)
     const scrollRef = useRef(null)
     const [editVehicle, setEditVehicle] = useState(null)
+    const [search, setSearch] = useState("")
+    const [addVehicle, setAddVehicle] = useState(false)
 
     return(
         <>
@@ -47,7 +50,16 @@ export function Vehicle_Table ({details, getVehicles, updateVehicles}){
         {editVehicle && (
             <Vehicle_Edit_Modal vehicle={editVehicle} onClose={()=>setEditVehicle(null)} getVehicles={getVehicles} updateVehicles={updateVehicles}/>
         )}
+        {addVehicle && (
+            <Add_Vehicle onClose={()=>setAddVehicle(false)}/>
+        )}
+
         <h1 className="text-xl font-bold mb-2.5">Manage Vehicles</h1>
+        <div className="w-full h-fit flex justify-between mb-2.5">
+        <input type="search" name="" id="" placeholder="Search: eg, ABC 123, John Smith, Toyota" className="input input-neutral" onChange={(e)=>setSearch(e.target.value)}/>
+
+        <button className="btn btn-primary" onClick={()=>setAddVehicle(true)}>Add Vehicle</button>
+        </div>  
         <table className="table table-zebra table-pin-rows bg-base-100 shadow-sm">
             <thead>
                 <tr>
@@ -66,7 +78,10 @@ export function Vehicle_Table ({details, getVehicles, updateVehicles}){
                     <td className="text-center text-black/50" colSpan={8}>No vehicles to manage</td>
                 </tr>
                 ):(
-                details.map((details, index)=>{
+                details?.filter((detail)=>
+                    detail.model.toLowerCase().includes(search.toLowerCase()) || 
+                    detail.plate_no.toLowerCase().includes(search.toLowerCase()) ||
+                    detail.owner.toLowerCase().includes(search.toLowerCase())).map((details, index)=>{
                 return(
                     <tr key={index}>
                         <td>{details.model}</td>
