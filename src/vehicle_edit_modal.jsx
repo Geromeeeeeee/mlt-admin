@@ -2,6 +2,24 @@ import { useState } from "react"
 
 export function Vehicle_Edit_Modal ({vehicle, onClose, getVehicles, updateVehicles}){
 
+    const [imgs, setImgs] = useState({
+        1:null,
+        2:null,
+        3:null,
+        4:null
+    })
+    const [deletedImgs, setDeteledImgs] = useState([])
+    const existingImages = vehicle.all_images ? vehicle.all_images.split(",") : []
+    const handleImageChange = (imgNumber, file) => {
+        if (file) {
+            setImgs(prev => ({ ...prev, [imgNumber]: file }))
+            setDeteledImgs(prev => prev.filter(number => number !== imgNumber))
+        }
+    }
+    const handleClearImgs = (imgNumber) => {
+        setImgs(prev => ({ ...prev, [imgNumber]: null }))
+        setDeteledImgs(prev => [...prev, imgNumber])
+    }
     const [formData, setFormData] = useState({
         id: vehicle.car_id,
         model: vehicle.model,
@@ -20,7 +38,7 @@ export function Vehicle_Edit_Modal ({vehicle, onClose, getVehicles, updateVehicl
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        const success = await updateVehicles(formData)
+        const success = await updateVehicles(formData, imgs, deletedImgs, existingImages)
 
         if(success){
             await getVehicles()
@@ -37,6 +55,49 @@ export function Vehicle_Edit_Modal ({vehicle, onClose, getVehicles, updateVehicl
                 <form className="flex flex-col w-full overflow-y-auto" onSubmit={handleSubmit}>
                     <label htmlFor="model" className="text-md font-semibold">Model</label>
                     <input type="text" name="model" id="model" value={formData.model} onChange={editFormData} className="input input-primary w-full mb-2.5"/>
+
+                    <label className="text-md font-semibold mb-2">Vehicle Images (Max 4 Slots)</label>
+                    <div className="grid grid-cols-2 gap-4 mb-3.5">
+                        {[1, 2, 3, 4].map((slot) => {
+                            const existingImg = existingImages[slot - 1]
+                            const newFile = imgs[slot]
+                            const isMarkedDeleted = deletedImgs.includes(slot)
+
+                            return (
+                                <div key={slot} className="border border-neutral-200 rounded-lg p-2 flex flex-col items-center bg-base-100 relative">
+                                    <span className="absolute top-1 left-2 text-xs font-bold opacity-30">Slot {slot}</span>
+                                    
+                                    {newFile ? (
+                                        <img src={URL.createObjectURL(newFile)} alt="preview" className="w-full h-24 object-cover rounded mb-2" />
+                                    ) : (existingImg && !isMarkedDeleted) ? (
+                                        <img src={`http://localhost/vnm-system1/php/cars/uploads/cars/${existingImg}`} alt="current" className="w-full h-24 object-cover rounded mb-2" />
+                                    ) : (
+                                        <div className="w-full h-24 border border-dashed border-neutral-300 rounded flex items-center justify-center text-xs text-neutral-400 mb-2 bg-neutral-50">
+                                            Empty Slot
+                                        </div>
+                                    )}
+
+                                    <div className="flex gap-1 w-full mt-auto">
+                                        <label className="btn btn-xs btn-primary flex-1 text-center cursor-pointer">
+                                            {existingImg || newFile ? "Replace" : "Upload"}
+                                            <input 
+                                                type="file" 
+                                                accept="image/*" 
+                                                className="hidden" 
+                                                onChange={(e) => handleImageChange(slot, e.target.files[0])} 
+                                            />
+                                        </label>
+                                        
+                                        {(existingImg || newFile) && !isMarkedDeleted && (
+                                            <button type="button" onClick={() => handleClearImgs(slot)} className="btn btn-xs btn-error text-white">
+                                                Remove
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
 
                     <label htmlFor="plate" className="text-md font-semibold">Plate No.</label>
                     <input type="text" name="plate" id="plate" value={formData.plate} onChange={editFormData}className="input input-primary w-full mb-2.5"/>
