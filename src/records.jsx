@@ -113,11 +113,51 @@ export function useRecords (){
         }
     }
 
+    const addVehicle = async (vehicleData, imgs) => {
+        try {
+            if(!vehicleData) alert("Missing Information")
+            
+            const vehicleDetails = new FormData()
+
+            vehicleDetails.append("action", "addVehicle")
+            vehicleDetails.append("model", vehicleData.model)
+            vehicleDetails.append("plate", vehicleData.plate)
+            vehicleDetails.append("brand", vehicleData.brand)
+            vehicleDetails.append("year", vehicleData.year)
+            vehicleDetails.append("rate", vehicleData.rate)
+            vehicleDetails.append("owner", vehicleData.owner)
+            vehicleDetails.append("fuel", vehicleData.fuel)
+            vehicleDetails.append("trans", vehicleData.trans)
+            vehicleDetails.append("desc", vehicleData.desc)
+            vehicleDetails.append("availability", vehicleData.availability)
+
+            const safeImgs = (imgs && typeof imgs === "object" && !Array.isArray(imgs))
+                ? imgs
+                : { 1: null, 2: null, 3: null, 4: null }
+
+            Object.keys(safeImgs).forEach((slotNumber) => {
+                const file = safeImgs[slotNumber]
+                if (file) {
+                    vehicleDetails.append(`car_image_${slotNumber}`, file)
+                }
+            })
+
+            const response = await axios.post("http://localhost/mlt-admin/back/vehicles.php", vehicleDetails)
+
+            await getVehicles()
+            alert("Vehicle Added Successfully")
+            return true
+        } catch (error) {
+            alert ("Error adding vehicle")
+            return false
+        }
+    }
+
     useEffect(()=>{
         getRecords()
         getReturn()
         getVehicles()
     },[])
 
-    return{records, returns, vehicles , getVehicles, updateVehicles ,getReturn ,getRecords, buttonAction}
+    return{records, returns, vehicles, addVehicle ,getVehicles, updateVehicles ,getReturn ,getRecords, buttonAction}
 }

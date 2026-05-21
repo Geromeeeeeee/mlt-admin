@@ -1,9 +1,11 @@
 import { useState, useRef } from "react";
 import { Vehicle_Edit_Modal } from "./vehicle_edit_modal";
 import { Add_Vehicle } from "./add_vehicle_modal";
+import { useRecords } from "./records";
 
 export function Vehicle_Table ({details, getVehicles, updateVehicles}){
 
+    const { addVehicle: addVehicleHook } = useRecords()
     const [carDisp, setCarDisp] = useState(null)
     const scrollRef = useRef(null)
     const [editVehicle, setEditVehicle] = useState(null)
@@ -51,7 +53,11 @@ export function Vehicle_Table ({details, getVehicles, updateVehicles}){
             <Vehicle_Edit_Modal vehicle={editVehicle} onClose={()=>setEditVehicle(null)} getVehicles={getVehicles} updateVehicles={updateVehicles}/>
         )}
         {addVehicle && (
-            <Add_Vehicle onClose={()=>setAddVehicle(false)}/>
+            <Add_Vehicle onClose={() => setAddVehicle(false)} addVehicle={async (vehicle, vehicleImg) => {
+                const success = await addVehicleHook(vehicle, vehicleImg);
+                if (success) setAddVehicle(false); // Close modal only if upload succeeds
+            }}
+            />
         )}
 
         <h1 className="text-xl font-bold mb-2.5">Manage Vehicles</h1>

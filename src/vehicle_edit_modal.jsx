@@ -49,7 +49,7 @@ export function Vehicle_Edit_Modal ({vehicle, onClose, getVehicles, updateVehicl
     return(
         <>
         <div className="modal modal-open bg-black/40 fixed inset-0 z-50" onClick={onClose}>
-            <div className="modal-box modal-middle z-20 max-h-[85vh]" onClick={e=>e.stopPropagation()}>
+            <div className="modal-box modal-middle z-20 max-h-[85vh] min-w-[45vw]" onClick={e=>e.stopPropagation()}>
                 <h1 className="text-xl font-bold mb-2.5">Edit Vehicle Information</h1>
                 <hr className="mb-5 border-neutral-300 w-full"/>
                 <form className="flex flex-col w-full overflow-y-auto" onSubmit={handleSubmit}>
