@@ -5,6 +5,7 @@ export function useRecords (){
     const [records, setRecords] = useState([])
     const [returns, setReturns] = useState([])
     const [vehicles, setVehicles] = useState([])
+    const [users, setUsers] = useState([])
 
     const getRecords = async () => {
         try {
@@ -153,11 +154,28 @@ export function useRecords (){
         }
     }
 
+    const manageUsers = async (userAction, userID) => {
+        try {
+            const uID = userID ?? null
+            const userDetails = await axios.post("http://localhost/mlt-admin/back/users.php", {
+                action: userAction,
+                uid: uID
+            })
+            const refreshUsers = await axios.post("http://localhost/mlt-admin/back/users.php", {
+                action: "getUsers"
+            })
+            setUsers(refreshUsers.data)
+            
+        } catch (error) {
+            alert("Server Error")
+        }
+    }
+
     useEffect(()=>{
         getRecords()
         getReturn()
         getVehicles()
     },[])
 
-    return{records, returns, vehicles, addVehicle ,getVehicles, updateVehicles ,getReturn ,getRecords, buttonAction}
+    return{records, returns, vehicles, addVehicle ,getVehicles, updateVehicles ,getReturn ,getRecords, manageUsers, users ,buttonAction}
 }

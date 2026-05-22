@@ -2,8 +2,6 @@ import { useState } from "react";
 
 export function Add_Vehicle({onClose, addVehicle}){
 
-    
-
      const [vehicle, setVehicle] = useState({
         model: "",
         plate: "",

@@ -24,7 +24,11 @@ export function Drawer ({children}) {
                         </Link>
                     </li>
                     <li className="link-hover text-xl mb-2.5">History</li>
-                    <li></li>
+                    <li className="mb-2.5">
+                        <Link to="/Users" className="link-hover text-xl">
+                        User Accounts
+                        </Link>
+                    </li>
                 </ul>
             </aside>
         </div>
