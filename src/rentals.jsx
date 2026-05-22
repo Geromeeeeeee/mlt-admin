@@ -6,10 +6,30 @@ export function Rentals (){
     const recordsArray = Object.values(records)
     const returnsArray = Object.values(returns)
 
-    const pending =  recordsArray.filter(request => request.request_status === 'Pending' || (request.request_status === 'Approved' && request.payment_status === 'Unpaid' ||request.request_status ==='Approved' && request.payment_status === 'Proof Uploaded') || (request.payment_status === "Reupload Required") )
-    const approved =  recordsArray.filter(request => request.request_status === 'Approved' && request.payment_status=== 'Paid')
+    const pendingStatuses = [
+        'Unpaid', 
+        'Downpayment Proof Uploaded', 
+        'Downpayment Reupload Required', 
+        'Downpayment Verified',
+        'Final Proof Uploaded', 
+        'Final Reupload Required'
+    ]
+
+    const pending = recordsArray.filter(request => 
+        request.request_status === 'Pending' || 
+        (request.request_status === 'Approved' && pendingStatuses.includes(request.payment_status))
+    )
+
+    const approved = recordsArray.filter(request => 
+        request.request_status === 'Approved' && 
+        request.payment_status === 'Fully Paid'
+    )
+
     const active = recordsArray.filter(status=>status.request_status==='Picked Up')
-    const returnRequests = returnsArray.filter(status=>status.status === 'Pending' || status.status === 'Approved')
+
+    const returnRequests = returnsArray.filter(
+        status=>status.status === 'Pending' || 
+        status.status === 'Approved')
 
     return(
         <>

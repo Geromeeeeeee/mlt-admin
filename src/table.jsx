@@ -126,20 +126,37 @@ export function Table ({type, list, action}) {
                                     </div>
                                 )
                             } else if (requests.request_status === "Approved"){
-                                if (requests.payment_status === "Unpaid" || requests.payment_status === "Reupload Required"){
+                                if (requests.payment_status === "Unpaid" || requests.payment_status === "Downpayment Reupload Required" || requests.payment_status === "Final Reupload Required"){
                                 actionButton = (
                                     <button className="btn btn-disabled w-fit h-fit">
                                         {requests.payment_status === "Unpaid" ? "No Payment Proof" : "No Payment Reupload"}
                                     </button>
                                 )
-                            } else if (requests.payment_status === "Proof Uploaded"){
+                            } else if (requests.payment_status === "Downpayment Proof Uploaded"){
                                 actionButton = (
                                     <div className="flex flex-col justify-between"> 
-                                    <button className="btn btn-primary btn-sm m-1" onClick={()=> action(id, "Payment")}>
-                                        Verify Payment
+                                    <button className="btn btn-primary btn-sm m-1" onClick={()=> action(id, "Verify Downpayment")}>
+                                        Verify Downpayment
                                     </button>
-                                    <button className="btn btn-error btn-sm m-1" onClick={()=> action(id, "Reupload Payment")}>
-                                        Reupload Payment
+                                    <button className="btn btn-error btn-sm m-1" onClick={()=> action(id, "Reupload Downpayment")}>
+                                        Reupload Downpayment
+                                    </button>
+                                    </div>
+                                )
+                            } else if (requests.payment_status === "Downpayment Verified") {
+                                actionButton = (
+                                    <button className="btn btn-success btn-disabled text-white">
+                                        Downpayment Verified. No final payment proof
+                                    </button>
+                                )
+                            }else if (requests.payment_status === "Final Proof Uploaded"){
+                                actionButton = (
+                                    <div className="flex flex-col justify-between"> 
+                                    <button className="btn btn-primary btn-sm m-1" onClick={()=> action(id, "Verify Final Payment")}>
+                                        Verify Final Payment
+                                    </button>
+                                    <button className="btn btn-error btn-sm m-1" onClick={()=> action(id, "Reupload Final Payment")}>
+                                        Reupload Final Payment
                                     </button>
                                     </div>
                                 )
@@ -171,14 +188,36 @@ export function Table ({type, list, action}) {
                                     </button>
                                 ) : "No File"}
                                 </td>
-                                <td>{requests.payment_proof_path ? (
-                                    <button 
-                                        className="btn btn-sm btn-info text-white"
-                                        onClick={() => setSelectedImg(`http://localhost/vnm-system1/${requests.payment_proof_path}`)}
-                                    >
-                                        Payment Proof
-                                    </button>
-                                ) : "..."}
+                                <td>
+                                    {(() => {
+                                        const down = requests.downpayment_proof_path;
+                                        const final = requests.final_payment_proof_path;
+                                        const status = requests.payment_status;
+
+                                        // 1. PRIORITY: If a final proof exists, show it regardless of the status
+                                        if (final) {
+                                            return (
+                                                <button className="btn btn-sm btn-info text-white" onClick={() => setSelectedImg(`http://localhost/vnm-system1/${final}`)}>
+                                                    Final Proof
+                                                </button>
+                                            );
+                                        }
+
+                                        // 2. If no final proof, check if a downpayment exists
+                                        if (down) {
+                                            return (
+                                                <button className="btn btn-sm btn-info text-white" onClick={() => setSelectedImg(`http://localhost/vnm-system1/${down}`)}>
+                                                    Downpayment Proof
+                                                </button>
+                                            );
+                                        }
+
+                                        // 3. If no files exist, fallback to showing the pending status strings
+                                        if (status.includes("Final")) return "Pending Final";
+                                        if (status.includes("Downpayment")) return "Pending Downpayment";
+
+                                        return "No Payment Data";
+                                    })()}
                                 </td>
                                 <td>{requests.payment_reference_no}</td>
                                 <td>{requests.rental_date}</td>
