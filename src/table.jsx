@@ -116,22 +116,34 @@ export function Table ({type, list, action}) {
                         } else if (type === "Pending Rental Requests"){
                             if(requests.request_status === "Pending"){
                                 actionButton = (
-                                    <button className="btn btn-primary" onClick={()=> action(id, "Approve")}>
+                                    <div className="flex flex-col justify-between">
+                                    <button className="btn btn-primary btn-sm m-1" onClick={()=> action(id, "Approve")}>
                                         Approve
                                     </button>
+                                    <button className="btn btn-error btn-sm m-1" onClick={()=> action(id, "Decline")}>
+                                        Decline
+                                    </button>
+                                    </div>
                                 )
-                            } else if (requests.request_status === "Approved" && requests.payment_status === "Unpaid"){
+                            } else if (requests.request_status === "Approved"){
+                                if (requests.payment_status === "Unpaid" || requests.payment_status === "Reupload Required"){
                                 actionButton = (
-                                    <button className="btn btn-primary w-fit h-fit">
-                                        No payment proof
+                                    <button className="btn btn-disabled w-fit h-fit">
+                                        {requests.payment_status === "Unpaid" ? "No Payment Proof" : "No Payment Reupload"}
                                     </button>
                                 )
-                            } else if (requests.request_status === "Approved" && requests.payment_status === "Proof Uploaded"){
+                            } else if (requests.payment_status === "Proof Uploaded"){
                                 actionButton = (
-                                    <button className="btn btn-primary" onClick={()=> action(id, "Payment")}>
+                                    <div className="flex flex-col justify-between"> 
+                                    <button className="btn btn-primary btn-sm m-1" onClick={()=> action(id, "Payment")}>
                                         Verify Payment
                                     </button>
+                                    <button className="btn btn-error btn-sm m-1" onClick={()=> action(id, "Reupload Payment")}>
+                                        Reupload Payment
+                                    </button>
+                                    </div>
                                 )
+                            }
                             }
                         } else if (type === "Approved Rentals"){
 

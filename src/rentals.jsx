@@ -6,7 +6,7 @@ export function Rentals (){
     const recordsArray = Object.values(records)
     const returnsArray = Object.values(returns)
 
-    const pending =  recordsArray.filter(request => request.request_status === 'Pending' || (request.request_status === 'Approved' && request.payment_status === 'Unpaid' ||request.request_status ==='Approved' && request.payment_status === 'Proof Uploaded'))
+    const pending =  recordsArray.filter(request => request.request_status === 'Pending' || (request.request_status === 'Approved' && request.payment_status === 'Unpaid' ||request.request_status ==='Approved' && request.payment_status === 'Proof Uploaded') || (request.payment_status === "Reupload Required") )
     const approved =  recordsArray.filter(request => request.request_status === 'Approved' && request.payment_status=== 'Paid')
     const active = recordsArray.filter(status=>status.request_status==='Picked Up')
     const returnRequests = returnsArray.filter(status=>status.status === 'Pending' || status.status === 'Approved')
