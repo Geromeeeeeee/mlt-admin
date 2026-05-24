@@ -53,7 +53,7 @@ if($data){
         $clear_stmt->execute();
         $clear_stmt->close();
 
-        $target_dir = "../../vnm-system1/php/cars/uploads/cars/";
+        $target_dir = __DIR__ . "/Uploads/Cars/";
 
         if (!is_dir($target_dir)) {
             mkdir($target_dir, 0777, true);
@@ -162,7 +162,7 @@ if($data){
         $new_car_id = $conn->insert_id;
         $add_stmt->close();
 
-        $target_dir = "../../vnm-system1/php/cars/uploads/cars/";
+        $target_dir = __DIR__ . "/Uploads/Cars/";
 
         if (!is_dir($target_dir)) {
             mkdir($target_dir, 0777, true);

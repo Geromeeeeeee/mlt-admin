@@ -27,7 +27,7 @@ export function Vehicle_Table ({details, getVehicles, updateVehicles}){
                         carDisp.all_images.split(",").map((img_name,index)=>(
                             <div key={index} className="w-full shrink-0">
                                 <img 
-                                src={`http://localhost/vnm-system1/php/cars/uploads/cars/${img_name.trim()}`} 
+                                src={`http://localhost/mlt-admin/back/Uploads/Cars/${img_name.trim()}`} 
                                 alt=""
                                 className="w-full h-full object-contain max-h-[80vh] rounded-sm"/>
                             </div>

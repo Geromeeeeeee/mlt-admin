@@ -182,7 +182,7 @@ export function Table ({type, list, action}) {
                                 <td>{requests.driver_license_photo ? (
                                     <button 
                                         className="btn btn-sm btn-info text-white"
-                                        onClick={() => setSelectedImg(`http://localhost/vnm-system1/${requests.driver_license_photo}`)}
+                                        onClick={() => setSelectedImg(`http://localhost/mlt-admin/back/${requests.driver_license_photo}`)}
                                     >
                                         License
                                     </button>
@@ -197,7 +197,7 @@ export function Table ({type, list, action}) {
                                         // 1. PRIORITY: If a final proof exists, show it regardless of the status
                                         if (final) {
                                             return (
-                                                <button className="btn btn-sm btn-info text-white" onClick={() => setSelectedImg(`http://localhost/vnm-system1/${final}`)}>
+                                                <button className="btn btn-sm btn-info text-white" onClick={() => setSelectedImg(`http://localhost/mlt-admin/back/${final}`)}>
                                                     Final Proof
                                                 </button>
                                             );
@@ -206,7 +206,7 @@ export function Table ({type, list, action}) {
                                         // 2. If no final proof, check if a downpayment exists
                                         if (down) {
                                             return (
-                                                <button className="btn btn-sm btn-info text-white" onClick={() => setSelectedImg(`http://localhost/vnm-system1/${down}`)}>
+                                                <button className="btn btn-sm btn-info text-white" onClick={() => setSelectedImg(`http://localhost/mlt-admin/back/${down}`)}>
                                                     Downpayment Proof
                                                 </button>
                                             );
