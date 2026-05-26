@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "./config";
 
 export function Return_Form() {
     const nav = useNavigate();
@@ -42,7 +43,7 @@ export function Return_Form() {
         e.preventDefault();
 
         try {
-            const endRentalRequest = await axios.post("http://localhost/mlt-admin/back/lifecycle.php", {
+            const endRentalRequest = await axios.post(`${API_BASE_URL}/back/lifecycle.php`, {
                 requestID: data.request_id,
                 action: "End Rental",
                 condition: condition,
@@ -70,7 +71,7 @@ const debugNonRefundable = parseFloat(data.total_cost) * 0.50;
 
 console.log("1. Daily Rate:", debugDailyRate);
 console.log("2. Days Used:", debugDaysUsed);
-console.log("3. Calculated Usage Fee:", debugUsageFee); // This should show up now!
+console.log("3. Calculated Usage Fee:", debugUsageFee);
 console.log("4. Non-Refundable Penalty (50%):", debugNonRefundable);
 console.log("5. Deduction (Max of 3 & 4):", Math.max(debugUsageFee, debugNonRefundable));
 console.log("6. Final Refund (AmountPaid - Deduction):", parseFloat(data.amount_paid) - Math.max(debugUsageFee, debugNonRefundable));

@@ -110,8 +110,8 @@ if($data){
         $stmt1->execute();
         $stmt1->close();
 
-        $insertDetails = "INSERT INTO rental_return_details (request_id, car_condition_return, odometer_return, damage_fee, final_refund_amount) 
-                        VALUES (?, ?, ?, ?, ?)";
+        $insertDetails = "INSERT INTO rental_return_details (request_id, return_date_actual,car_condition_return, odometer_return, damage_fee, final_refund_amount) 
+                        VALUES (?, CURDATE(), ?, ?, ?, ?)";
         $stmt2 = $conn->prepare($insertDetails);
         $stmt2->bind_param("isidd", $request_id, $condition, $odometer, $damage, $calculatedRefund);
         

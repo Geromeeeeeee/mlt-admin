@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { Vehicle_Edit_Modal } from "./vehicle_edit_modal";
 import { Add_Vehicle } from "./add_vehicle_modal";
 import { useRecords } from "./records";
+import { API_BASE_URL } from "./config";
 
 export function Vehicle_Table ({details, getVehicles, updateVehicles}){
 
@@ -27,7 +28,7 @@ export function Vehicle_Table ({details, getVehicles, updateVehicles}){
                         carDisp.all_images.split(",").map((img_name,index)=>(
                             <div key={index} className="w-full shrink-0">
                                 <img 
-                                src={`http://localhost/mlt-admin/back/Uploads/Cars/${img_name.trim()}`} 
+                                src={`${API_BASE_URL}/back/Uploads/Cars/${img_name.trim()}`} 
                                 alt=""
                                 className="w-full h-full object-contain max-h-[80vh] rounded-sm"/>
                             </div>

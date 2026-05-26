@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "./config";
 
 export function useRecords (){
     const [records, setRecords] = useState([])
@@ -9,7 +10,7 @@ export function useRecords (){
 
     const getRecords = async () => {
         try {
-            const response = await axios.post("http://localhost/mlt-admin/back/api.php", {
+            const response = await axios.post(`${API_BASE_URL}/back/api.php`, {
                 action: "getRequests"
             })
             setRecords(response.data)
@@ -20,7 +21,7 @@ export function useRecords (){
 
     const getReturn = async () =>{
         try {
-            const returnRequests = await axios.post("http://localhost/mlt-admin/back/api.php", {
+            const returnRequests = await axios.post(`${API_BASE_URL}/back/api.php`, {
                 action: "getReturnRequests"
             })
             setReturns(returnRequests.data)
@@ -31,7 +32,7 @@ export function useRecords (){
 
     const buttonAction = async (id, actionType) =>{
         try {
-            await axios.post("http://localhost/mlt-admin/back/lifecycle.php", {
+            await axios.post(`${API_BASE_URL}/back/lifecycle.php`, {
                 requestID: id,
                 action: actionType
             })
@@ -45,7 +46,7 @@ export function useRecords (){
 
     const getVehicles = async () => {
         try {
-            const vehicleDetails = await axios.post("http://localhost/mlt-admin/back/vehicles.php", {
+            const vehicleDetails = await axios.post(`${API_BASE_URL}/back/vehicles.php`, {
                 action: "getVehicles"
             })
             setVehicles(vehicleDetails.data)
@@ -99,7 +100,7 @@ export function useRecords (){
                 }
             }
 
-            const updatedVehicleDetails = await axios.post("http://localhost/mlt-admin/back/vehicles.php", updateDetails)
+            const updatedVehicleDetails = await axios.post(`${API_BASE_URL}/back/vehicles.php`, updateDetails)
             await getVehicles()
             alert("Updates Successfully")
             return true
@@ -143,7 +144,7 @@ export function useRecords (){
                 }
             })
 
-            const response = await axios.post("http://localhost/mlt-admin/back/vehicles.php", vehicleDetails)
+            const response = await axios.post(`${API_BASE_URL}/back/vehicles.php`, vehicleDetails)
 
             await getVehicles()
             alert("Vehicle Added Successfully")
@@ -157,11 +158,11 @@ export function useRecords (){
     const manageUsers = async (userAction, userID) => {
         try {
             const uID = userID ?? null
-            const userDetails = await axios.post("http://localhost/mlt-admin/back/users.php", {
+            const userDetails = await axios.post(`${API_BASE_URL}/back/users.php`, {
                 action: userAction,
                 uid: uID
             })
-            const refreshUsers = await axios.post("http://localhost/mlt-admin/back/users.php", {
+            const refreshUsers = await axios.post(`${API_BASE_URL}/back/users.php`, {
                 action: "getUsers"
             })
             setUsers(refreshUsers.data)

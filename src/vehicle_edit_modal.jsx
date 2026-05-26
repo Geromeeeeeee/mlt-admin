@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { API_BASE_URL } from "./config"
 
 export function Vehicle_Edit_Modal ({vehicle, onClose, getVehicles, updateVehicles}){
 
@@ -70,7 +71,7 @@ export function Vehicle_Edit_Modal ({vehicle, onClose, getVehicles, updateVehicl
                                     {newFile ? (
                                         <img src={URL.createObjectURL(newFile)} alt="preview" className="w-full h-24 object-cover rounded mb-2" />
                                     ) : (existingImg && !isMarkedDeleted) ? (
-                                        <img src={`http://localhost/vnm-system1/php/cars/uploads/cars/${existingImg}`} alt="current" className="w-full h-24 object-cover rounded mb-2" />
+                                        <img src={`${API_BASE_URL}/back/Uploads/Cars/${existingImg}`} alt="current" className="w-full h-24 object-cover rounded mb-2" />
                                     ) : (
                                         <div className="w-full h-24 border border-dashed border-neutral-300 rounded flex items-center justify-center text-xs text-neutral-400 mb-2 bg-neutral-50">
                                             Empty Slot

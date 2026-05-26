@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "./config";
 
 export function Table ({type, list, action}) {
 
@@ -182,7 +183,7 @@ export function Table ({type, list, action}) {
                                 <td>{requests.driver_license_photo ? (
                                     <button 
                                         className="btn btn-sm btn-info text-white"
-                                        onClick={() => setSelectedImg(`http://localhost/mlt-admin/back/${requests.driver_license_photo}`)}
+                                        onClick={() => setSelectedImg(`${API_BASE_URL}/back/${requests.driver_license_photo}`)}
                                     >
                                         License
                                     </button>
@@ -194,25 +195,22 @@ export function Table ({type, list, action}) {
                                         const final = requests.final_payment_proof_path;
                                         const status = requests.payment_status;
 
-                                        // 1. PRIORITY: If a final proof exists, show it regardless of the status
                                         if (final) {
                                             return (
-                                                <button className="btn btn-sm btn-info text-white" onClick={() => setSelectedImg(`http://localhost/mlt-admin/back/${final}`)}>
+                                                <button className="btn btn-sm btn-info text-white" onClick={() => setSelectedImg(`${API_BASE_URL}/back/${final}`)}>
                                                     Final Proof
                                                 </button>
                                             );
                                         }
 
-                                        // 2. If no final proof, check if a downpayment exists
                                         if (down) {
                                             return (
-                                                <button className="btn btn-sm btn-info text-white" onClick={() => setSelectedImg(`http://localhost/mlt-admin/back/${down}`)}>
+                                                <button className="btn btn-sm btn-info text-white" onClick={() => setSelectedImg(`${API_BASE_URL}/back/${down}`)}>
                                                     Downpayment Proof
                                                 </button>
                                             );
                                         }
 
-                                        // 3. If no files exist, fallback to showing the pending status strings
                                         if (status.includes("Final")) return "Pending Final";
                                         if (status.includes("Downpayment")) return "Pending Downpayment";
 

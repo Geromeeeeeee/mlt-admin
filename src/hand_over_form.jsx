@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "./config";
 
 export function HandOverForm(){
 
@@ -16,7 +17,7 @@ export function HandOverForm(){
         e.preventDefault()
 
         try {
-            const sendConfirmation = await axios.post("http://localhost/mlt-admin/back/lifecycle.php", {
+            const sendConfirmation = await axios.post(`${API_BASE_URL}/back/lifecycle.php`, {
                 requestID: data.request_id,
                 action: "Pick Up",
                 odometer: odom,
