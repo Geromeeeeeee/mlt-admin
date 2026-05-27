@@ -4,40 +4,55 @@ import axios from "axios";
 import { API_BASE_URL } from "./config";
 
 export function Return_Form() {
-    const nav = useNavigate();
-    const location = useLocation();
-    const data = location.state;
+    const nav = useNavigate()
+    const location = useLocation()
+    const data = location.state
 
-    const [condition, setCondition] = useState("");
-    const [odometer, setOdometer] = useState("");
-    const [damage, setDamage] = useState("");
+    const [condition, setCondition] = useState("")
+    const [odometer, setOdometer] = useState("")
+    const [damage, setDamage] = useState("")
 
-    const dailyRate = parseFloat(data.daily_rate) || 0;
-    const totalCost = parseFloat(data.total_cost) || 0;
-    const amountPaid = parseFloat(data.amount_paid) || 0;
-    const nonRefundable = totalCost * 0.50;
+    const dailyRate = parseFloat(data.daily_rate) || 0
+    const totalCost = parseFloat(data.total_cost) || 0
+    const amountPaid = parseFloat(data.amount_paid) || 0
+    const nonRefundable = totalCost * 0.50
 
-    const [y, m, d] = data.rental_date.split("-").map(Number);
-    const pickupDate = new Date(y, m - 1, d);
-    const today = new Date();
+    const [y, m, d] = data.rental_date.split("-").map(Number)
+    const pickupDate = new Date(y, m - 1, d)
+    pickupDate.setHours(0, 0, 0, 0)
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const requestedAtStr = data.requested_at ? data.requested_at.split(" ")[0] : null
+    const actualReturnDate = requestedAtStr
+        ? new Date(requestedAtStr)
+        : new Date(today)
+    actualReturnDate.setHours(0, 0, 0, 0)
     
-    const timeDiff = today - pickupDate;
-    const daysUsed = Math.max(1, Math.ceil(timeDiff / (1000 * 60 * 60 * 24)));
+    const timeDiff = actualReturnDate.getTime() - pickupDate.getTime()
+    const daysUsed = Math.max(1, Math.ceil(timeDiff / (1000 * 60 * 60 * 24)))
 
-    const scheduledReturnDays = parseInt(data.rental_duration_days) || 0;
-    const scheduledReturnDate = new Date(y, m - 1, d + scheduledReturnDays);
-    const daysLate = Math.max(0, Math.floor((today - scheduledReturnDate) / (1000 * 60 * 60 * 24)));
+    const scheduledReturnDays = parseInt(data.rental_duration_days, 10) || 0
+    const daysToAdd = scheduledReturnDays > 0 ? scheduledReturnDays - 1 : 0
+    const scheduledReturnDate = new Date(y, m - 1, d + daysToAdd)
+    scheduledReturnDate.setHours(0, 0, 0, 0)
 
+    const lateTimeDiff = actualReturnDate.getTime() - scheduledReturnDate.getTime()
+    const daysLate = Math.max(0, Math.floor(lateTimeDiff / (1000 * 60 * 60 * 24)))
+
+    const lateFeeAmount = daysLate * dailyRate;
     const usageFee = daysUsed * dailyRate;
     const totalDeduction = Math.max(usageFee, nonRefundable);
     const estimatedRefund = Math.max(0, amountPaid - totalDeduction);
-    
-    const lateFeeAmount = daysLate * dailyRate;
 
-    const isEarlyReturn = data.request_status === "Early Return Approved";
-    const isLateReturn = data.request_status === "Late Return Approved";
+    const isEarlyReturn = data.request_status === "Early Return Approved" || data.request_status === "Early Return Requested";
     
-    const totalAmountDue = isLateReturn ? (totalCost + lateFeeAmount) : (totalCost - parseFloat(data.total_deducted_cost || 0));
+    const isLateReturn = data.request_status === "Late Return Approved" || data.request_status === "Late Return Requested" || daysLate > 0;
+    
+    const totalAmountDue = isLateReturn 
+        ? (totalCost + lateFeeAmount) 
+        : Math.max(0, totalCost - parseFloat(data.total_deducted_cost || 0));
 
     const endRental = async (e) => {
         e.preventDefault();
@@ -49,7 +64,8 @@ export function Return_Form() {
                 condition: condition,
                 odometer: odometer,
                 damage: damage,
-                refund: isEarlyReturn ? estimatedRefund : 0 
+                refund: isEarlyReturn ? estimatedRefund : 0,
+                late_fee: isLateReturn ? lateFeeAmount : 0, 
             });
 
             if (endRentalRequest.data.stat) {
@@ -62,20 +78,6 @@ export function Return_Form() {
             alert("Server Error")
         }
     }
-
-    console.log("--- MATH AUDIT ---");
-const debugDailyRate = parseFloat(data.daily_rate);
-const debugDaysUsed = daysUsed;
-const debugUsageFee = debugDailyRate * debugDaysUsed;
-const debugNonRefundable = parseFloat(data.total_cost) * 0.50;
-
-console.log("1. Daily Rate:", debugDailyRate);
-console.log("2. Days Used:", debugDaysUsed);
-console.log("3. Calculated Usage Fee:", debugUsageFee);
-console.log("4. Non-Refundable Penalty (50%):", debugNonRefundable);
-console.log("5. Deduction (Max of 3 & 4):", Math.max(debugUsageFee, debugNonRefundable));
-console.log("6. Final Refund (AmountPaid - Deduction):", parseFloat(data.amount_paid) - Math.max(debugUsageFee, debugNonRefundable));
-console.log("------------------");
 
     return (
         <div className="card shadow-sm m-2.5">
