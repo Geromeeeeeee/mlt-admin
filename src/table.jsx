@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "./config";
 
-export function Table ({type, list, action}) {
+export function Table ({type, list, filter, setFilter, search, setSearch}) {
 
     const todayStr = new Date().toISOString().split('T')[0];
 

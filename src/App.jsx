@@ -8,6 +8,7 @@ import { VehiclePickup } from './vehicle_pickup'
 import { Return_Form } from './return_form'
 import { Vehicle_Management_Page } from './vehicles_management'
 import { Users } from './users'
+import { History } from './history'
 
 function App() {
 
@@ -21,6 +22,7 @@ function App() {
           <Route path="/Return Vehicle" element={<Return_Form/>}/>
           <Route path="/Manage Vehicles" element={<Vehicle_Management_Page/>}/>
           <Route path="/Users" element={<Users/>}/>
+          <Route path="/History" element={<History/>}/>
         </Routes>
       </Drawer>
     </BrowserRouter>
