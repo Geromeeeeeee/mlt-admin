@@ -70,7 +70,7 @@ export function Return_Form() {
 
             if (endRentalRequest.data.stat) {
                 alert("Rental Closed")
-                nav('/')
+                nav('/Rentals')
             } else {
                 alert("Server Error")
             }

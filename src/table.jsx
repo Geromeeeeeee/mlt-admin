@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "./config";
 
-export function Table ({type, list, filter, setFilter, search, setSearch}) {
+export function Table ({type, list, filter, setFilter, search, setSearch, action, finalCost}) {
 
     const todayStr = new Date().toISOString().split('T')[0];
 
@@ -165,7 +165,13 @@ export function Table ({type, list, filter, setFilter, search, setSearch}) {
                             }
                         } else if (type === "Approved Rentals"){
 
-                            const disableButton = requests.rental_date !== todayStr;
+                            const [year, month, day] = requests.rental_date.split("-").map(Number);
+                            const [hours, minutes, seconds] = requests.rental_time.split(":").map(Number);
+
+                            const rentalStart = new Date(year, month - 1, day, hours, minutes, seconds);
+                            const now = new Date();
+
+                            const disableButton = now < rentalStart;
 
                             actionButton = (
                                 <button className="btn btn-primary" disabled={disableButton} onClick={()=>nav("/Vehicle Pickup", {state: requests})}>
@@ -238,34 +244,23 @@ export function Table ({type, list, filter, setFilter, search, setSearch}) {
                                 <td>{requests.total_cost}</td>
                                 <td>
                                     {(() => {
-                                    const isEarly = requests.request_status === "Early Return Approved";
-                                    const isLate = requests.request_status === "Late Return Approved";
-                                    
-                                    const cost = parseFloat(requests.total_cost || 0);
-                                    const deducted = parseFloat(requests.total_deducted_cost || 0);
-
-                                    if (isEarly) {
-                                        return (
-                                            <span className="text-success font-semibold">
-                                                {deducted} (Early)
-                                            </span>
-                                        );
-                                    } else if (isLate && lateFeeAmount > 0) {
-                                        const totalWithLateFee = cost + lateFeeAmount;
-                                        return (
-                                            <div className="flex flex-col">
-                                                <span className="text-error font-bold">
-                                                    {totalWithLateFee}
-                                                </span>
-                                                <span className="text-xs text-error/80">
-                                                    ({lateFeeAmount} penalty)
-                                                </span>
-                                            </div>
-                                        );
-                                    } else {
-                                        return <span>{cost}</span>;
-                                    }
-                                })()}
+                                        const deducted = parseFloat(requests.total_deducted_cost);
+                                        
+                                        if (requests.request_status === "Late Return Approved") {
+                                            return (
+                                                <div className="flex flex-col">
+                                                    <span className="text-error font-bold">
+                                                        {deducted.toFixed(2)}
+                                                    </span>
+                                                    <span className="text-xs text-error/80">
+                                                        (Total Charged)
+                                                    </span>
+                                                </div>
+                                            );
+                                        }
+                                        
+                                        return <span>{deducted.toFixed(2)}</span>;
+                                    })()}
                                 </td>
                                 <td>{requests.requested_at}</td>
                                 <td>{requests.request_status}</td>

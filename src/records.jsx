@@ -7,6 +7,7 @@ export function useRecords (){
     const [returns, setReturns] = useState([])
     const [vehicles, setVehicles] = useState([])
     const [users, setUsers] = useState([])
+    const [finalCost, setFinalCost] = useState([])
 
     const getRecords = async () => {
         try {
@@ -32,12 +33,13 @@ export function useRecords (){
 
     const buttonAction = async (id, actionType) =>{
         try {
-            await axios.post(`${API_BASE_URL}/back/lifecycle.php`, {
+            const response = await axios.post(`${API_BASE_URL}/back/lifecycle.php`, {
                 requestID: id,
                 action: actionType
             })
             await getRecords()
             await getReturn()
+            setFinalCost(response.data.final_cost)
             alert(`${actionType} Successful`)
         } catch (error) {
             alert(`${actionType} Failed`)
@@ -178,5 +180,5 @@ export function useRecords (){
         getVehicles()
     },[])
 
-    return{records, returns, vehicles, addVehicle ,getVehicles, updateVehicles ,getReturn ,getRecords, manageUsers, users ,buttonAction}
+    return{records, returns, vehicles, addVehicle ,getVehicles, updateVehicles ,getReturn ,getRecords, manageUsers, users ,buttonAction, finalCost}
 }

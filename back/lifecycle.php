@@ -8,6 +8,7 @@ if($data){
     $request_id = $data['requestID'];
     $action_type = $data['action'];
     $update = "";
+    $update2 = "";
     $insert = "";
     $insert_stmt = "";
 
@@ -28,13 +29,17 @@ if($data){
             $odometer = $data['odometer'];
             $notes = $data['notes'];
             $update = "UPDATE rental_requests SET request_status = 'Picked Up', odometer_pickup = ?, condition_pickup = ? WHERE request_id = ?";
+            $update2 = "INSERT INTO rental_pickup_details (request_id, pickup_date_actual, car_condition_pickup, odometer_pickup) VALUES (?, NOW(), ?, ?)";
         } else if ($action_type === "Approve Return"){
 
-            $check_stat = "SELECT request_status FROM rental_requests WHERE request_id = ?";
+            $check_stat = "SELECT r.request_status, rrq.total_deducted_cost FROM rental_requests r LEFT JOIN rental_return_requests rrq ON r.request_id = rrq.request_id WHERE r.request_id = ?";
             $stat_stmt = $conn->prepare($check_stat);
             $stat_stmt->bind_param("i", $request_id);
             $stat_stmt->execute();
-            $current_stat = $stat_stmt->get_result()->fetch_assoc()['request_status'];
+            $final_cost = $stat_stmt->get_result();
+            $final_cost_row = $final_cost->fetch_assoc();
+            $current_stat = $final_cost_row['request_status'];
+            $total_deducted_cost = $final_cost_row['total_deducted_cost'];
             $stat_stmt->close();
 
             $approved_stat = "Return Approved";
@@ -56,19 +61,34 @@ if($data){
 
         if(!empty($update)){
             $update_stmt = $conn->prepare($update);
+            $update2_stmt = "";
 
             if(in_array($action_type,['Approve', 'Decline', 'Verify Downpayment', 'Reupload Downpayment', 'Verify Final Payment', 'Reupload Final Payment'])){
                 $update_stmt->bind_param("i", $request_id);
-            } else if ($action_type === "Pick Up"){
-                $update_stmt->bind_param("isi", $odometer, $notes, $request_id);
             } else if ($action_type === "Approve Return"){
                 $update_stmt->bind_param("si", $approved_stat, $request_id);
+            } else if ($action_type === "Pick Up"){
+                $update_stmt->bind_param("isi", $odometer, $notes, $request_id);
+                $update2_stmt = $conn->prepare($update2);
+                $update2_stmt->bind_param("isi", $request_id, $notes, $odometer);
             }
 
             if($update_stmt->execute()){
-                echo json_encode(["stat"=>true]);
+                if($action_type === 'Pick Up'){
+                    if($update2_stmt->execute()){
+                        echo json_encode(["stat"=>true]);
+                    } else {
+                        echo json_encode(["stat"=>false, "error"=>"Failed to insert pickup details"]);
+                    }
+                } 
+                else if ($action_type === 'Approve Return'){
+                    echo json_encode(["stat" => true, "final_cost" => $total_deducted_cost]);
+                } 
+                else {
+                    echo json_encode(["stat"=>true]);
+                }
             } else {
-                echo json_encode(["stat"=>false]);
+                echo json_encode(["stat"=>false, "error"=>"Database update failed"]);
             }
         }
 

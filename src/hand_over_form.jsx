@@ -25,7 +25,7 @@ export function HandOverForm(){
             })
             if(sendConfirmation.data.stat){
                 alert("Pick Up Successful")
-                nav('/')
+                nav('/Rentals')
             } else {
                 alert ("Error")
             }
