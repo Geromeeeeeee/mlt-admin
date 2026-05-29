@@ -74,6 +74,9 @@ export function Table ({type, list, filter, setFilter, search, setSearch, action
                     ) : (
                         list.map((requests, index)=>{
                         const id = requests.request_id
+                        const down = requests.downpayment_proof_path;
+                        const final = requests.final_payment_proof_path;
+                        const status = requests.payment_status;
 
                         //Date formatting para sa late and early returns for their refunds saka late fees
                         const today = new Date();
@@ -153,10 +156,10 @@ export function Table ({type, list, filter, setFilter, search, setSearch, action
                             }else if (requests.payment_status === "Final Proof Uploaded"){
                                 actionButton = (
                                     <div className="flex flex-col justify-between"> 
-                                    <button className="btn btn-primary btn-sm m-1" onClick={()=> action(id, "Verify Final Payment")}>
+                                    <button className="btn btn-primary btn-sm m-1 h-fit" onClick={()=> action(id, "Verify Final Payment")}>
                                         Verify Final Payment
                                     </button>
-                                    <button className="btn btn-error btn-sm m-1" onClick={()=> action(id, "Reupload Final Payment")}>
+                                    <button className="btn btn-error btn-sm m-1 h-fit" onClick={()=> action(id, "Reupload Final Payment")}>
                                         Reupload Final Payment
                                     </button>
                                     </div>
@@ -197,10 +200,6 @@ export function Table ({type, list, filter, setFilter, search, setSearch, action
                                 </td>
                                 <td>
                                     {(() => {
-                                        const down = requests.downpayment_proof_path;
-                                        const final = requests.final_payment_proof_path;
-                                        const status = requests.payment_status;
-
                                         if (final) {
                                             return (
                                                 <button className="btn btn-sm btn-info text-white" onClick={() => setSelectedImg(`${API_BASE_URL}/back/${final}`)}>
@@ -223,7 +222,10 @@ export function Table ({type, list, filter, setFilter, search, setSearch, action
                                         return "No Payment Data";
                                     })()}
                                 </td>
-                                <td>{requests.payment_reference_no}</td>
+                                <td>
+                                    {final ? requests.final_payment_reference_no :
+                                    down ? requests.downpayment_reference_no : "N/A"}
+                                </td>
                                 <td>{requests.rental_date}</td>
                                 <td>{requests.rental_time}</td>
                                 <td>{requests.rental_duration_days}</td>

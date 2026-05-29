@@ -31,9 +31,10 @@ if($data){
 
         echo json_encode($results);
     } else if ($action === "getReturnRequests"){
-        $getReturnRequests = "SELECT rrq.*, r.*, c.* FROM rental_return_requests rrq
+        $getReturnRequests = "SELECT rrq.*, r.*, c.*, u.fullname FROM rental_return_requests rrq
         INNER JOIN rental_requests r ON rrq.request_id = r.request_id
         INNER JOIN cars c ON r.car_id = c.car_id
+        INNER JOIN users u ON r.user_id = u.user_id
         WHERE r.request_status IN ('Return Requested', 'Early Return Requested', 'Late Return Requested', 'Return Approved', 'Early Return Approved', 'Late Return Approved')
         ORDER BY rrq.requested_at DESC";
 

@@ -15,6 +15,7 @@ export function Return_Form() {
     const dailyRate = parseFloat(data.daily_rate) || 0
     const totalCost = parseFloat(data.total_cost) || 0
     const amountPaid = parseFloat(data.amount_paid) || 0
+    const totalDeductedCost = parseFloat(data.total_deducted_cost)
     const nonRefundable = totalCost * 0.50
 
     const [y, m, d] = data.rental_date.split("-").map(Number)
@@ -44,7 +45,7 @@ export function Return_Form() {
     const lateFeeAmount = daysLate * dailyRate;
     const usageFee = daysUsed * dailyRate;
     const totalDeduction = Math.max(usageFee, nonRefundable);
-    const estimatedRefund = Math.max(0, amountPaid - totalDeduction);
+    const estimatedRefund = totalCost - totalDeductedCost
 
     const isEarlyReturn = data.request_status === "Early Return Approved" || data.request_status === "Early Return Requested";
     
@@ -64,8 +65,8 @@ export function Return_Form() {
                 condition: condition,
                 odometer: odometer,
                 damage: damage,
-                refund: isEarlyReturn ? estimatedRefund : 0,
-                late_fee: isLateReturn ? lateFeeAmount : 0, 
+                refund: isEarlyReturn ? data.calc_refund : 0,
+                late_fee: isLateReturn ? data.calc_late_fee : 0, 
             });
 
             if (endRentalRequest.data.stat) {
@@ -90,12 +91,12 @@ export function Return_Form() {
                 {isLateReturn ? (
                     <>
                         <p className="text-lg"><b>Days Late: </b>{daysLate}</p>
-                        <p className="text-lg"><b>Original Rental Cost: </b>₱{totalCost.toFixed(2)}</p>
-                        <p className="text-lg"><b>Late Fee: </b>₱{lateFeeAmount.toFixed(2)}</p>
+                        <p className="text-lg"><b>Original Rental Cost: </b>₱{data.final_cost}</p>
+                        <p className="text-lg"><b>Late Fee: </b>₱{data.calc_late_fee}</p>
                         <p className="text-lg"><b>Total Amount Due: </b>₱{totalAmountDue.toFixed(2)}</p>
                     </>
                 ) : (
-                    <p className="text-lg"><b>Estimated Refund: </b>₱{estimatedRefund.toFixed(2)}</p>
+                    <p className="text-lg"><b>Estimated Refund: </b>₱{data.calc_refund}</p>
                 )}
                 
                 <hr className="mb-5" />
