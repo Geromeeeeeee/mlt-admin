@@ -12,11 +12,8 @@ export function Return_Form() {
     const [odometer, setOdometer] = useState("")
     const [damage, setDamage] = useState("")
 
-    const dailyRate = parseFloat(data.daily_rate) || 0
     const totalCost = parseFloat(data.total_cost) || 0
-    const amountPaid = parseFloat(data.amount_paid) || 0
-    const totalDeductedCost = parseFloat(data.total_deducted_cost)
-    const nonRefundable = totalCost * 0.50
+    const lateFee = parseFloat(data.calc_late_fee) || 0
 
     const [y, m, d] = data.rental_date.split("-").map(Number)
     const pickupDate = new Date(y, m - 1, d)
@@ -42,17 +39,12 @@ export function Return_Form() {
     const lateTimeDiff = actualReturnDate.getTime() - scheduledReturnDate.getTime()
     const daysLate = Math.max(0, Math.floor(lateTimeDiff / (1000 * 60 * 60 * 24)))
 
-    const lateFeeAmount = daysLate * dailyRate;
-    const usageFee = daysUsed * dailyRate;
-    const totalDeduction = Math.max(usageFee, nonRefundable);
-    const estimatedRefund = totalCost - totalDeductedCost
-
     const isEarlyReturn = data.request_status === "Early Return Approved" || data.request_status === "Early Return Requested";
     
     const isLateReturn = data.request_status === "Late Return Approved" || data.request_status === "Late Return Requested" || daysLate > 0;
     
     const totalAmountDue = isLateReturn 
-        ? (totalCost + lateFeeAmount) 
+        ? (totalCost + lateFee) 
         : Math.max(0, totalCost - parseFloat(data.total_deducted_cost || 0));
 
     const endRental = async (e) => {
@@ -65,8 +57,6 @@ export function Return_Form() {
                 condition: condition,
                 odometer: odometer,
                 damage: damage,
-                refund: isEarlyReturn ? data.calc_refund : 0,
-                late_fee: isLateReturn ? data.calc_late_fee : 0, 
             });
 
             if (endRentalRequest.data.stat) {
@@ -91,7 +81,7 @@ export function Return_Form() {
                 {isLateReturn ? (
                     <>
                         <p className="text-lg"><b>Days Late: </b>{daysLate}</p>
-                        <p className="text-lg"><b>Original Rental Cost: </b>₱{data.final_cost}</p>
+                        <p className="text-lg"><b>Original Rental Cost: </b>₱{data.total_cost}</p>
                         <p className="text-lg"><b>Late Fee: </b>₱{data.calc_late_fee}</p>
                         <p className="text-lg"><b>Total Amount Due: </b>₱{totalAmountDue.toFixed(2)}</p>
                     </>

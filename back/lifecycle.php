@@ -96,12 +96,19 @@ if($data){
         $condition = $data['condition'];
         $odometer = $data['odometer'];
         $damage = $data['damage'];
-        $refund = $data['refund'];
-        $late_fee = $data['late_fee'];
         
-        $query = "SELECT r.total_cost, c.daily_rate, r.rental_date, r.rental_duration_days, r.amount_paid, r.request_status 
+        $query = "SELECT 
+        r.total_cost, 
+        c.daily_rate, 
+        r.rental_date, 
+        r.rental_duration_days, 
+        r.amount_paid, 
+        r.request_status,
+        rrq.calc_refund,
+        rrq.calc_late_fee 
           FROM rental_requests r
           INNER JOIN cars c ON r.car_id = c.car_id
+          LEFT JOIN rental_return_requests rrq ON r.request_id = rrq.request_id
           WHERE r.request_id = ?";
         $stmt = $conn->prepare($query);
         $stmt->bind_param("i", $request_id);
@@ -110,20 +117,8 @@ if($data){
         $rental = $result->fetch_assoc();
         $stmt->close();
 
-        $dailyRate = (float)$rental['daily_rate'];
-        $totalCost = (float)$rental['total_cost'];
-        $amountPaid = (float)$rental['amount_paid'];
-        $nonRefundable = $totalCost * 0.50;
-
-        $pickupDate = new DateTime($rental['rental_date']);
-        $today = new DateTime();
-        $diff = $today->diff($pickupDate);
-        $daysUsed = max(1, $diff->days);
-
-        $usageFee = $daysUsed * $dailyRate;
-        $totalDeduction = max($usageFee, $nonRefundable);
-        
-        $calculatedRefund = ($rental['request_status'] === "Early Return Approved") ? max(0, $amountPaid - $totalDeduction) : 0;
+        $refund = $rental['calc_refund'] ?? 0;
+        $late_fee = $rental['calc_late_fee'] ?? 0;
 
         $updateReq = "UPDATE rental_requests SET request_status = 'Returned' WHERE request_id = ?";
         $stmt1 = $conn->prepare($updateReq);
@@ -134,7 +129,7 @@ if($data){
         $insertDetails = "INSERT INTO rental_return_details (request_id, return_date_actual,car_condition_return, odometer_return, damage_fee, final_refund_amount, late_fee) 
                         VALUES (?, CURDATE(), ?, ?, ?, ?, ?)";
         $stmt2 = $conn->prepare($insertDetails);
-        $stmt2->bind_param("isiddd", $request_id, $condition, $odometer, $damage, $calculatedRefund, $late_fee);
+        $stmt2->bind_param("isiddd", $request_id, $condition, $odometer, $damage, $refund, $late_fee);
         
         if ($stmt2->execute()) {
             echo json_encode(["stat" => true]);
