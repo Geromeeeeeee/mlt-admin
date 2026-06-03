@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "./config";
+import { PopUp } from "./modal";
 
 export function Table ({type, list, filter, setFilter, search, setSearch, action, finalCost}) {
+
+    const [popUpData, setPopUpData] = useState(null)
+    const [resultPopUp, setResultPopUp] = useState(null)
 
     const todayStr = new Date().toISOString().split('T')[0];
 
@@ -14,6 +18,7 @@ export function Table ({type, list, filter, setFilter, search, setSearch, action
         <div className="p-5">
             {/**View license / payment proof. dito q ginaya yung sa vehicle table */}
             {/**Bakit ganito yung comment tapos kapag nasa loob ng map iba? dahil ba sa curly braces? */}
+            <PopUp data={popUpData} setData={setPopUpData} action={action} result={(newResultData) => {setPopUpData(newResultData)}}/>
             {selectedImg && (
                 <div className="modal modal-open bg-black/60" onClick={() => setSelectedImg(null)}>
                     <div className="modal-box relative max-w-3xl bg-base-100 p-0 overflow-hidden" onClick={e => e.stopPropagation()}>
@@ -121,10 +126,25 @@ export function Table ({type, list, filter, setFilter, search, setSearch, action
                             if(requests.request_status === "Pending"){
                                 actionButton = (
                                     <div className="flex flex-col justify-between">
-                                    <button className="btn btn-primary btn-sm m-1" onClick={()=> action(id, "Approve")}>
+                                     <button className="btn btn-primary btn-sm m-1" onClick={()=> 
+                                        setPopUpData({
+                                            show: true,
+                                            msg: "Are you sure you want to approve this rental request?",
+                                            type: "green",
+                                            id: id,
+                                            action: "Approve"
+                                        })}>
                                         Approve
                                     </button>
-                                    <button className="btn btn-error btn-sm m-1" onClick={()=> action(id, "Decline")}>
+                                    <button className="btn btn-error btn-sm m-1" onClick={()=> 
+                                        setPopUpData({
+                                            show: true,
+                                            msg: "Are you sure you want to decline this rental request?",
+                                            type: "red",
+                                            id: id,
+                                            action: "Decline"
+                                        })
+                                     }>
                                         Decline
                                     </button>
                                     </div>
@@ -138,11 +158,25 @@ export function Table ({type, list, filter, setFilter, search, setSearch, action
                                 )
                             } else if (requests.payment_status === "Downpayment Proof Uploaded"){
                                 actionButton = (
-                                    <div className="flex flex-col justify-between"> 
-                                    <button className="btn btn-primary btn-sm m-1" onClick={()=> action(id, "Verify Downpayment")}>
-                                        Verify Downpayment
+                                    <div className="flex flex-col justify-between">
+                                    <button className="btn btn-primary btn-sm m-1" onClick={()=> 
+                                        setPopUpData({
+                                            show: true,
+                                            msg: "Verify Downpayment? Be sure to double check payment proofs before verifying.",
+                                            type: "green",
+                                            id: id,
+                                            action: "Verify Downpayment"
+                                        })}>
+                                        Approve
                                     </button>
-                                    <button className="btn btn-error btn-sm m-1" onClick={()=> action(id, "Reupload Downpayment")}>
+                                    <button className="btn btn-error btn-sm m-1 text-white text-xs" onClick={()=> 
+                                        setPopUpData({
+                                            show: true,
+                                            msg: "Unsure about the proof? Ask user for a reupload.",
+                                            type: "red",
+                                            id: id,
+                                            action: "Reupload Downpayment"
+                                        })}>
                                         Reupload Downpayment
                                     </button>
                                     </div>
@@ -155,11 +189,33 @@ export function Table ({type, list, filter, setFilter, search, setSearch, action
                                 )
                             }else if (requests.payment_status === "Final Proof Uploaded"){
                                 actionButton = (
-                                    <div className="flex flex-col justify-between"> 
+                                    <div className="flex flex-col justify-between">
+                                    {/** 
                                     <button className="btn btn-primary btn-sm m-1 h-fit" onClick={()=> action(id, "Verify Final Payment")}>
                                         Verify Final Payment
                                     </button>
                                     <button className="btn btn-error btn-sm m-1 h-fit" onClick={()=> action(id, "Reupload Final Payment")}>
+                                        Reupload Final Payment
+                                    </button>
+                                    */}
+                                    <button className="btn btn-primary btn-sm m-1" onClick={()=> 
+                                        setPopUpData({
+                                            show: true,
+                                            msg: "Verify Final Payment? Be sure to double check payment proofs before verifying.",
+                                            type: "green",
+                                            id: id,
+                                            action: "Verify Final Payment"
+                                        })}>
+                                        Approve
+                                    </button>
+                                    <button className="btn btn-error btn-sm m-1 text-white text-xs h-fit" onClick={()=> 
+                                        setPopUpData({
+                                            show: true,
+                                            msg: "Unsure about the proof? Ask user for a reupload.",
+                                            type: "red",
+                                            id: id,
+                                            action: "Reupload Final Payment"
+                                        })}>
                                         Reupload Final Payment
                                     </button>
                                     </div>
@@ -184,6 +240,7 @@ export function Table ({type, list, filter, setFilter, search, setSearch, action
                         }
 
                         return(
+                        <>
                         <tr key={requests.request_id || index}>
                             {type!=="Return Requests" && (
                                 <>
@@ -280,6 +337,7 @@ export function Table ({type, list, filter, setFilter, search, setSearch, action
                                 </>
                             )}
                         </tr>
+                        </>
                         )
                         })
                     )}

@@ -31,7 +31,7 @@ export function useRecords (){
         }
     }
 
-    const buttonAction = async (id, actionType) =>{
+    const buttonAction = async (id, actionType, onComplete) =>{
         try {
             const response = await axios.post(`${API_BASE_URL}/back/lifecycle.php`, {
                 requestID: id,
@@ -40,7 +40,8 @@ export function useRecords (){
             await getRecords()
             await getReturn()
             setFinalCost(response.data.final_cost)
-            alert(`${actionType} Successful`)
+            const message = (`${actionType} Successful`)
+            if(onComplete) onComplete(message)
         } catch (error) {
             alert(`${actionType} Failed`)
         }

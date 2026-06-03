@@ -2,8 +2,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "./config";
+import { PopUp } from "./modal";
 
 export function HandOverForm(){
+
+    const [popUpData, setPopUpData] = useState(null)
 
     const nav = useNavigate()
 
@@ -13,7 +16,7 @@ export function HandOverForm(){
     const [note, setNote] = useState("")
     const [odom, setOdom] = useState("")
 
-    const startRental = async (e) =>{
+    const startRental = async (e, onComplete) =>{
         e.preventDefault()
 
         try {
@@ -24,18 +27,21 @@ export function HandOverForm(){
                 notes: note
             })
             if(sendConfirmation.data.stat){
-                alert("Pick Up Successful")
-                nav('/Rentals')
+                onComplete("Hand Over Successful")
             } else {
                 alert ("Error")
             }
         } catch (error) {
-            
+            alert("Error occurred while starting rental")
         }
     }
 
     return(
         <>
+        <PopUp data={popUpData} setData={setPopUpData}
+        action={(id, actionType, onComplete) => {
+        startRental({ preventDefault: () => {} }, onComplete)}}
+        result={(res) => setPopUpData(res)}/>
         <div className="card shadow-sm m-2.5">
             <div className="card-body">
                 <h1 className="card-title text-2xl font-bold mb-5">
@@ -54,8 +60,17 @@ export function HandOverForm(){
                     <label htmlFor="notes" className="text-lg font-bold">Notes: </label>
                     <textarea name="notes" id="notes" placeholder="Type Here" required value={note} onChange={(e)=>setNote(e.target.value)} className="textarea w-full textarea-primary mb-5"></textarea>
 
-                    <button type="submit" className="btn btn-primary">
-                        Confirm hand over and start rental
+                    <button type="button" className="btn btn-primary"
+                    onClick={()=>{
+                        setPopUpData({
+                            msg: "Confirm hand over and start rental?",
+                            type: "green",
+                            id: data.request_id,
+                            action: "Confirm Hand Over"
+                        })
+                    }}
+                    >
+                        Confirm Hand Over
                     </button>
                 </form>
             </div>
