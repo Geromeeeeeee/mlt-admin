@@ -116,7 +116,73 @@ export function Table ({type, list, filter, setFilter, search, setSearch, action
 
                         //Different button types depende sa rental status, kung late, early, or on time ba sha
                         let actionButton
-                        if(type==="Active Rental Requests"){
+                        if (type === "Extension Requests") {
+                            const isExtensionPaymentPending = requests.payment_status === "Extension Payment Pending";
+                            const isExtensionReuploadRequired = requests.payment_status === "Extension Reupload Required";
+                            const isExtensionApproved = requests.status === "Approved";
+                            const hasExtensionProof = Boolean(requests.payment_proof_path);
+                            const shouldShowExtensionActions = hasExtensionProof && (
+                                isExtensionApproved
+                                || isExtensionPaymentPending
+                                || isExtensionReuploadRequired
+                            );
+
+                            if (shouldShowExtensionActions) {
+                                actionButton = (
+                                    <div className="flex flex-col justify-between">
+                                        <button className="btn btn-primary btn-sm m-1" onClick={() => setPopUpData({
+                                            show: true,
+                                            msg: "Verify extension payment? Be sure to double check payment proofs before verifying.",
+                                            type: "green",
+                                            id: requests.extension_id,
+                                            action: "Verify Extension Payment"
+                                        })}>
+                                            Approve
+                                        </button>
+                                        <button className="btn btn-error h-fit btn-sm m-1 text-white text-xs" onClick={() => setPopUpData({
+                                            show: true,
+                                            msg: "Unsure about the proof? Ask user for a reupload.",
+                                            type: "red",
+                                            id: requests.extension_id,
+                                            action: "Reupload Extension Payment"
+                                        })}>
+                                            Reupload Extension Payment
+                                        </button>
+                                    </div>
+                                );
+                            } else if (isExtensionApproved || isExtensionPaymentPending || isExtensionReuploadRequired || requests.status === "Extension Payment Pending") {
+                                actionButton = (
+                                    <button className="btn btn-disabled btn-sm h-fit">
+                                        No Extension Payment
+                                    </button>
+                                );
+                            } else if (requests.status === "Pending") {
+                                actionButton = (
+                                    <div className="flex flex-col justify-between">
+                                        <button className="btn btn-primary btn-sm m-1" onClick={() => setPopUpData({
+                                            show: true,
+                                            msg: "Approve this extension request?",
+                                            type: "green",
+                                            id: requests.extension_id,
+                                            action: "Approve Extension"
+                                        })}>
+                                            Approve
+                                        </button>
+                                        <button className="btn btn-error btn-sm m-1" onClick={() => setPopUpData({
+                                            show: true,
+                                            msg: "Decline this extension request?",
+                                            type: "red",
+                                            id: requests.extension_id,
+                                            action: "Decline Extension"
+                                        })}>
+                                            Decline
+                                        </button>
+                                    </div>
+                                );
+                            } else {
+                                actionButton = <span className="text-sm font-semibold">{requests.status}</span>;
+                            }
+                        } else if(type==="Active Rental Requests"){
                             actionButton = (
                                 <button className="btn btn-primary">
                                     Manage Rental
@@ -152,7 +218,7 @@ export function Table ({type, list, filter, setFilter, search, setSearch, action
                             } else if (requests.request_status === "Approved"){
                                 if (requests.payment_status === "Unpaid" || requests.payment_status === "Downpayment Reupload Required" || requests.payment_status === "Final Reupload Required"){
                                 actionButton = (
-                                    <button className="btn btn-disabled w-fit h-fit">
+                                    <button className="btn btn-sm btn-disabled w-fit h-fit">
                                         {requests.payment_status === "Unpaid" ? "No Payment Proof" : "No Payment Reupload"}
                                     </button>
                                 )
@@ -190,14 +256,6 @@ export function Table ({type, list, filter, setFilter, search, setSearch, action
                             }else if (requests.payment_status === "Final Proof Uploaded"){
                                 actionButton = (
                                     <div className="flex flex-col justify-between">
-                                    {/** 
-                                    <button className="btn btn-primary btn-sm m-1 h-fit" onClick={()=> action(id, "Verify Final Payment")}>
-                                        Verify Final Payment
-                                    </button>
-                                    <button className="btn btn-error btn-sm m-1 h-fit" onClick={()=> action(id, "Reupload Final Payment")}>
-                                        Reupload Final Payment
-                                    </button>
-                                    */}
                                     <button className="btn btn-primary btn-sm m-1" onClick={()=> 
                                         setPopUpData({
                                             show: true,
@@ -257,6 +315,19 @@ export function Table ({type, list, filter, setFilter, search, setSearch, action
                                 </td>
                                 <td>
                                     {(() => {
+                                        if (type === 'Extension Requests') {
+                                        if (requests.payment_proof_path) {
+                                            return (
+                                                <button 
+                                                    className="btn btn-sm btn-info text-white" 
+                                                    onClick={() => setSelectedImg(`${API_BASE_URL}/back/${requests.payment_proof_path}`)}
+                                                >
+                                                    Ext. Proof
+                                                </button>
+                                            );
+                                            }
+                                            return "No Proof";
+                                        }
                                         if (final) {
                                             return (
                                                 <button className="btn btn-sm btn-info text-white" onClick={() => setSelectedImg(`${API_BASE_URL}/back/${final}`)}>
@@ -273,21 +344,24 @@ export function Table ({type, list, filter, setFilter, search, setSearch, action
                                             );
                                         }
 
-                                        if (status.includes("Final")) return "Pending Final";
-                                        if (status.includes("Downpayment")) return "Pending Downpayment";
+                                        if (status?.includes("Final")) return "Pending Final";
+                                        if (status?.includes("Downpayment")) return "Pending Downpayment"
 
-                                        return "No Payment Data";
+                                        return "No Payment Data"
                                     })()}
                                 </td>
                                 <td>
-                                    {final ? requests.final_payment_reference_no :
+                                    { type === 'Extension Requests' ? requests.payment_reference_no :
+                                    final ? requests.final_payment_reference_no :
                                     down ? requests.downpayment_reference_no : "N/A"}
                                 </td>
-                                <td>{requests.rental_date}</td>
+                                <td>
+                                    {type === 'Extension Requests' ? requests.new_end_date : requests.rental_date}
+                                </td>
                                 <td>{requests.rental_time}</td>
-                                <td>{requests.rental_duration_days}</td>
-                                <td>{requests.total_cost}</td>
-                                <td>{requests.request_status}</td>
+                                <td>{type === 'Extension Requests' ? requests.days_to_extend : requests.rental_duration_days}</td>
+                                <td>{type === 'Extension Requests' ? requests.additional_cost : requests.total_cost}</td>
+                                <td>{type === 'Extension Requests' ? requests.status :requests.request_status}</td>
                                 <td>{requests.admin_notes ? (
                                     requests.admin_notes
                                 ):(

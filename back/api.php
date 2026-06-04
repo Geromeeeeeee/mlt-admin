@@ -13,7 +13,8 @@ if($data){
                    u.fullname, 
                    c.model, 
                    c.plate_no, 
-                   c.daily_rate, 
+                   c.daily_rate,
+                   c.odometer, 
                    rr.rental_date, 
                    rr.rental_duration_days 
                    FROM rental_requests rr 
@@ -47,6 +48,24 @@ if($data){
             }
         }
         echo json_encode($returnResults);
+        exit();
+    } else if ($action === "getExtensionRequests"){
+        $getExtensionRequests = "SELECT rer.*, rr.*, c.model, c.plate_no, u.fullname 
+                                 FROM rental_extension_requests rer
+                                 INNER JOIN rental_requests rr ON rer.request_id = rr.request_id
+                                 INNER JOIN cars c ON rr.car_id = c.car_id
+                                 INNER JOIN users u ON rer.user_id = u.user_id
+                                 ORDER BY rer.requested_at DESC";
+
+        $extResult = $conn->query($getExtensionRequests);
+        $extResults = [];
+
+        if($extResult->num_rows > 0){
+            while($row = $extResult->fetch_assoc()){
+                $extResults[] = $row;
+            }
+        }
+        echo json_encode($extResults);
         exit();
     }
 }

@@ -8,6 +8,7 @@ export function useRecords (){
     const [vehicles, setVehicles] = useState([])
     const [users, setUsers] = useState([])
     const [finalCost, setFinalCost] = useState([])
+    const [extensions, setExtensions] = useState([])
 
     const getRecords = async () => {
         try {
@@ -17,6 +18,17 @@ export function useRecords (){
             setRecords(response.data)
         } catch (error) {
             alert("Server Error")
+        }
+    }
+
+    const getExtensions = async () => {
+        try {
+            const response = await axios.post(`${API_BASE_URL}/back/api.php`, {
+                action: "getExtensionRequests"
+            });
+            setExtensions(response.data);
+        } catch (error) {
+            console.error("Error fetching extensions:", error);
         }
     }
 
@@ -179,7 +191,8 @@ export function useRecords (){
         getRecords()
         getReturn()
         getVehicles()
+        getExtensions()
     },[])
 
-    return{records, returns, vehicles, addVehicle ,getVehicles, updateVehicles ,getReturn ,getRecords, manageUsers, users ,buttonAction, finalCost}
+    return{records, returns, extensions,vehicles, addVehicle ,getVehicles, updateVehicles ,getReturn ,getRecords, manageUsers, users ,buttonAction, finalCost}
 }

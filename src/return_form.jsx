@@ -2,15 +2,18 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "./config";
+import { PopUp } from "./modal";
 
 export function Return_Form() {
     const nav = useNavigate()
     const location = useLocation()
     const data = location.state
+    const [popUpData, setPopUpData] = useState(null)
 
     const [condition, setCondition] = useState("")
     const [odometer, setOdometer] = useState("")
     const [damage, setDamage] = useState("")
+    const [inputErr, setInputErr] = useState(null)
 
     const totalCost = parseFloat(data.total_cost) || 0
     const lateFee = parseFloat(data.calc_late_fee) || 0
@@ -47,7 +50,7 @@ export function Return_Form() {
         ? (totalCost + lateFee) 
         : Math.max(0, totalCost - parseFloat(data.total_deducted_cost || 0));
 
-    const endRental = async (e) => {
+    const endRental = async (e, onComplete) => {
         e.preventDefault();
 
         try {
@@ -60,8 +63,7 @@ export function Return_Form() {
             });
 
             if (endRentalRequest.data.stat) {
-                alert("Rental Closed")
-                nav('/Rentals')
+                if (onComplete) onComplete("Rental Closed. Information can be seen at Rental History.");
             } else {
                 alert("Server Error")
             }
@@ -71,6 +73,11 @@ export function Return_Form() {
     }
 
     return (
+        <>
+        <PopUp data={popUpData} setData={setPopUpData}
+        action={(id, actionType, onComplete) => {
+        endRental({ preventDefault: () => {} }, onComplete)}}
+        result={(res) => setPopUpData(res)}/>
         <div className="card shadow-sm m-2.5">
             <div className="card-body">
                 <h1 className="card-title text-2xl font-bold mb-5">Vehicle Return Form</h1>
@@ -92,18 +99,43 @@ export function Return_Form() {
                 <hr className="mb-5" />
                 
                 <form className="flex flex-col" onSubmit={endRental}>
+                    {inputErr && <p className="text-red-500 mb-2">Please fill out all fields correctly.</p>}
                     <label htmlFor="odometer" className="text-lg font-bold">Odometer Reading:</label>
-                    <input type="number" name="odometer" id="odometer" required min={1} value={odometer} onChange={(e) => setOdometer(e.target.value)} className="input input-primary w-full mb-2.5"/>
+                    <input type="number" name="odometer" id="odometer" required placeholder={data.odometer} min={parseFloat(data.odometer)} value={odometer} onChange={(e) =>{ setOdometer(e.target.value); setInputErr(null)}} className={`input w-full mb-2.5 ${inputErr === 'odomErr' ? 'input-error' : 'input-primary'}`}/>
 
                     <label htmlFor="damage" className="text-lg font-bold">Damage Fee:</label>
-                    <input type="number" name="damage" id="damage" required value={damage} onChange={(e) => setDamage(e.target.value)} className="input input-primary w-full mb-2.5"/>
+                    <input type="number" name="damage" id="damage" required value={damage} onChange={(e) => {setDamage(e.target.value); setInputErr(null)}} className={`input w-full mb-2.5 ${inputErr === 'damageErr' ? 'input-error' : 'input-primary'}`}/>
 
                     <label htmlFor="notes" className="text-lg font-bold">Car Condition upon return: </label>
-                    <textarea name="notes" id="notes" placeholder="Type Here" required value={condition} onChange={(e) => setCondition(e.target.value)} className="textarea w-full textarea-primary mb-5"></textarea>
+                    <textarea name="notes" id="notes" placeholder="Type Here" required value={condition} onChange={(e) => {setCondition(e.target.value); setInputErr(null)}} className={`textarea w-full mb-5 ${inputErr === 'condErr' ? 'textarea-error' : 'textarea-primary'}`}></textarea>
 
-                    <button type="submit" className="btn btn-primary">Confirm</button>
+                    <button type="button" className="btn btn-primary"
+                    onClick={()=>{
+                        if(parseFloat(odometer)<parseFloat(data.odometer)){
+                            setInputErr('odomErr')
+                            return
+                        }
+                        if(!damage)
+                            {setInputErr('damageErr')
+                            return
+                        }
+                        if(!condition){
+                            setInputErr('condErr')
+                            return
+                        }
+                        setPopUpData({
+                            msg: "Close Rental? Make sure all information is correct before confirming.",
+                            type: "green",
+                            id: data.request_id,
+                            action: "End Rental"
+                        })
+                    }}
+                    >
+                        Close Rental
+                    </button>
                 </form>
             </div>
         </div>
+        </>
     )
 }

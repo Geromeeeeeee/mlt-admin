@@ -2,9 +2,10 @@ import { Table } from "./table";
 import { useRecords } from "./records";
 
 export function Rentals (){
-    const {records, returns ,buttonAction} = useRecords()
+    const {records, returns, extensions, buttonAction} = useRecords()
     const recordsArray = Object.values(records)
     const returnsArray = Object.values(returns)
+    const extensionsArray = Object.values(extensions)
 
     const pendingStatuses = [
         'Unpaid', 
@@ -14,6 +15,11 @@ export function Rentals (){
         'Final Proof Uploaded', 
         'Final Reupload Required'
     ]
+
+    const extension = extensionsArray.filter(ext =>
+        ext.status === 'Pending' ||
+        ext.payment_status !== 'Fully Paid'
+    )
 
     const pending = recordsArray.filter(request => 
         request.request_status === 'Pending' || 
@@ -35,6 +41,7 @@ export function Rentals (){
         <>
         <Table type={"Active Rental Requests"} list={active} action={buttonAction}/>
         <Table type={"Pending Rental Requests"} list={pending} action={buttonAction}/>
+        <Table type={"Extension Requests"} list={extension} action={buttonAction}/>
         <Table type={"Approved Rentals"} list={approved} action={buttonAction}/>
         <Table type={"Return Requests"} list={returnRequests} action={buttonAction}/>
         </>

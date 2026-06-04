@@ -15,6 +15,7 @@ export function HandOverForm(){
 
     const [note, setNote] = useState("")
     const [odom, setOdom] = useState("")
+    const [inputErr, setInputErr] = useState(null)
 
     const startRental = async (e, onComplete) =>{
         e.preventDefault()
@@ -54,14 +55,23 @@ export function HandOverForm(){
                 <hr className="mb-5"/>
                 
                 <form onSubmit={startRental} className="flex flex-col">
+                    {inputErr && <p className="text-red-500 mb-2">Please fill out all fields correctly.</p>}
                     <label htmlFor="odometer" className="text-lg font-bold">Odometer Reading:</label>
-                    <input type="number" name="odometer" id="odometer" required min={1} value={odom} onChange={(e)=>setOdom(e.target.value)} className="input input-primary w-full mb-2.5"/>
+                    <input type="number" name="odometer" id="odometer" required min={data.odometer} placeholder={data.odometer} value={odom} onChange={(e)=>{setOdom(e.target.value); setInputErr(null)}} className={`input w-full mb-2.5 ${inputErr === 'odomErr' ? 'input-error' : 'input-primary'}`}/>
 
                     <label htmlFor="notes" className="text-lg font-bold">Notes: </label>
-                    <textarea name="notes" id="notes" placeholder="Type Here" required value={note} onChange={(e)=>setNote(e.target.value)} className="textarea w-full textarea-primary mb-5"></textarea>
+                    <textarea name="notes" id="notes" placeholder="Type Here" required value={note} onChange={(e)=>{setNote(e.target.value); setInputErr(null)}} className={`textarea w-full mb-5 ${inputErr === 'noteErr' ? 'textarea-error' : 'textarea-primary'}`}></textarea>
 
                     <button type="button" className="btn btn-primary"
                     onClick={()=>{
+                        if(parseFloat(odom) < parseFloat(data.odometer)){
+                            setInputErr("odomErr")
+                            return
+                        }
+                        if(!note){
+                            setInputErr("noteErr")
+                            return
+                        }
                         setPopUpData({
                             msg: "Confirm hand over and start rental?",
                             type: "green",

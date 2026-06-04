@@ -57,13 +57,86 @@ if($data){
             SET t1.status = 'Approved',
                 t2.request_status = ?
             WHERE t1.request_id = ?";
+        } else if ($action_type === "Approve Extension") {
+            $fetch_ext = "SELECT request_id, days_to_extend, additional_cost FROM rental_extension_requests WHERE extension_id = ?";
+            $stmt_ext = $conn->prepare($fetch_ext);
+            $stmt_ext->bind_param("i", $request_id);
+            $stmt_ext->execute();
+            $ext_data = $stmt_ext->get_result()->fetch_assoc();
+            $stmt_ext->close();
+
+            if ($ext_data) {
+                $update_ext = "UPDATE rental_extension_requests SET status = 'Approved' WHERE extension_id = ?";
+                $stmt1 = $conn->prepare($update_ext);
+                $stmt1->bind_param("i", $request_id);
+                
+                $update_rental = "UPDATE rental_requests 
+                                SET rental_duration_days = rental_duration_days + ?, 
+                                    total_cost = total_cost + ?,
+                                    payment_status = 'Extension Payment Pending' 
+                                WHERE request_id = ?";
+                $stmt2 = $conn->prepare($update_rental);
+                $stmt2->bind_param("idi", $ext_data['days_to_extend'], $ext_data['additional_cost'], $ext_data['request_id']);
+
+                if ($stmt1->execute() && $stmt2->execute()) {
+                    echo json_encode(["stat" => true]);
+                } else {
+                    echo json_encode(["stat" => false, "error" => "Partial update failure"]);
+                }
+                
+                exit();
+            }
+        } else if ($action_type === "Verify Extension Payment") {
+            $fetch_ext = "SELECT request_id FROM rental_extension_requests WHERE extension_id = ?";
+            $stmt_ext = $conn->prepare($fetch_ext);
+            $stmt_ext->bind_param("i", $request_id);
+            $stmt_ext->execute();
+            $ext_data = $stmt_ext->get_result()->fetch_assoc();
+            $stmt_ext->close();
+
+            if ($ext_data) {
+                $update_rental = "UPDATE rental_requests SET payment_status = 'Fully Paid', amount_paid = total_cost WHERE request_id = ?";
+                $stmt2 = $conn->prepare($update_rental);
+                $stmt2->bind_param("i", $ext_data['request_id']);
+
+                if ($stmt2->execute()) {
+                    echo json_encode(["stat" => true]);
+                } else {
+                    echo json_encode(["stat" => false, "error" => "Partial update failure"]);
+                }
+
+                exit();
+            }
+        } else if ($action_type === "Reupload Extension Payment") {
+            $fetch_ext = "SELECT request_id FROM rental_extension_requests WHERE extension_id = ?";
+            $stmt_ext = $conn->prepare($fetch_ext);
+            $stmt_ext->bind_param("i", $request_id);
+            $stmt_ext->execute();
+            $ext_data = $stmt_ext->get_result()->fetch_assoc();
+            $stmt_ext->close();
+
+            if ($ext_data) {
+                $update_rental = "UPDATE rental_requests SET payment_status = 'Extension Reupload' WHERE request_id = ?";
+                $stmt2 = $conn->prepare($update_rental);
+                $stmt2->bind_param("i", $ext_data['request_id']);
+
+                if ($stmt2->execute()) {
+                    echo json_encode(["stat" => true]);
+                } else {
+                    echo json_encode(["stat" => false, "error" => "Partial update failure"]);
+                }
+
+                exit();
+            }
+        } else if ($action_type === "Decline Extension") {
+            $update = "UPDATE rental_extension_requests SET status = 'Declined' WHERE extension_id = ?";
         }
 
         if(!empty($update)){
             $update_stmt = $conn->prepare($update);
             $update2_stmt = "";
 
-            if(in_array($action_type,['Approve', 'Decline', 'Verify Downpayment', 'Reupload Downpayment', 'Verify Final Payment', 'Reupload Final Payment'])){
+            if(in_array($action_type,['Approve', 'Decline', 'Verify Downpayment', 'Reupload Downpayment', 'Verify Final Payment', 'Reupload Final Payment', 'Approve Extension', 'Decline Extension'])){
                 $update_stmt->bind_param("i", $request_id);
             } else if ($action_type === "Approve Return"){
                 $update_stmt->bind_param("si", $approved_stat, $request_id);
@@ -99,7 +172,8 @@ if($data){
         
         $query = "SELECT 
         r.total_cost, 
-        c.daily_rate, 
+        c.daily_rate,
+        c.odometer, 
         r.rental_date, 
         r.rental_duration_days, 
         r.amount_paid, 
@@ -130,7 +204,13 @@ if($data){
                         VALUES (?, CURDATE(), ?, ?, ?, ?, ?)";
         $stmt2 = $conn->prepare($insertDetails);
         $stmt2->bind_param("isiddd", $request_id, $condition, $odometer, $damage, $refund, $late_fee);
-        
+
+        $updateReq2 = "UPDATE cars c JOIN rental_requests r ON c.car_id = r.car_id SET c.odometer = ? WHERE r.car_id = c.car_id AND r.request_id = ?";
+        $stmt3 = $conn->prepare($updateReq2);
+        $stmt3->bind_param("di", $odometer, $request_id);
+        $stmt3->execute();
+        $stmt3->close();
+
         if ($stmt2->execute()) {
             echo json_encode(["stat" => true]);
         } else {
